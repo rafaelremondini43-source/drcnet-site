@@ -8,23 +8,53 @@
   var API = 'https://wycdpvcvwypxdbpzakym.supabase.co/functions/v1/';
   var KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind5Y2RwdmN2d3lweGRicHpha3ltIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE5NjMwMjUsImV4cCI6MjA5NzUzOTAyNX0.OqVywUeA0wA7NLqqfM7-0x8fn81BhQMWRvxOoyXTLbI';
   var EMAIL = 'drc@drcnet.com.br';
+  var RE_EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
   function val(form, name) {
     var el = form.querySelector('[name="' + name + '"]');
     return el ? String(el.value || '').trim() : '';
   }
 
-  function confirma(form, html) {
+  function botao(form, enviando) {
+    var btn = form.querySelector('[type="submit"]');
+    if (!btn) return;
+    if (enviando) {
+      btn.dataset.rotulo = btn.value;
+      btn.value = 'Enviando…';
+      btn.disabled = true;
+    } else {
+      if (btn.dataset.rotulo) btn.value = btn.dataset.rotulo;
+      btn.disabled = false;
+    }
+  }
+
+  function confirma(form, formId, texto, linkAssunto, linkCorpo, linkEmail) {
     var wrapper = form.closest('.gform_wrapper') || form;
     var div = document.createElement('div');
     div.className = 'gform_confirmation_wrapper';
-    div.innerHTML = '<div class="gform_confirmation_message" tabindex="-1" style="padding:12px 0">' + html + '</div>';
+    var msg = document.createElement('div');
+    msg.className = 'gform_confirmation_message';
+    msg.setAttribute('tabindex', '-1');
+    msg.style.padding = '12px 0';
+    msg.textContent = texto;
+    if (linkAssunto !== undefined) {
+      msg.appendChild(document.createTextNode(' '));
+      var a = document.createElement('a');
+      a.href = 'mailto:' + (linkEmail || EMAIL) + '?subject=' + encodeURIComponent(linkAssunto) +
+               '&body=' + encodeURIComponent(linkCorpo || '');
+      a.textContent = linkEmail || EMAIL;
+      msg.appendChild(a);
+      msg.appendChild(document.createTextNode('.'));
+    }
+    div.appendChild(msg);
     wrapper.parentNode.insertBefore(div, wrapper);
     wrapper.style.display = 'none';
-    try { div.firstChild.focus(); } catch (e) {}
+    window['gf_submitting_' + formId] = false;
+    try { msg.focus(); } catch (e) {}
   }
 
   function erro(form, formId, msg, mailtoAssunto, mailtoCorpo) {
+    botao(form, false);
     var box = form.querySelector('.drc-form-erro');
     if (!box) {
       box = document.createElement('div');
@@ -33,10 +63,12 @@
       box.style.cssText = 'color:#b00;padding:8px 0;font-size:13px';
       form.insertBefore(box, form.firstChild);
     }
-    var link = 'mailto:' + EMAIL + '?subject=' + encodeURIComponent(mailtoAssunto) +
-               '&body=' + encodeURIComponent(mailtoCorpo);
-    box.innerHTML = (msg || 'Não foi possível enviar.') +
-      ' Você pode <a href="' + link + '">enviar por e-mail</a> para ' + EMAIL + '.';
+    box.textContent = (msg || 'Não foi possível enviar.') + ' Você pode enviar por e-mail: ';
+    var a = document.createElement('a');
+    a.href = 'mailto:' + EMAIL + '?subject=' + encodeURIComponent(mailtoAssunto) +
+             '&body=' + encodeURIComponent(mailtoCorpo);
+    a.textContent = EMAIL;
+    box.appendChild(a);
     window['gf_submitting_' + formId] = false;
   }
 
@@ -55,10 +87,11 @@
   var mapa = {
     1: function (form) { // newsletter (rodapé, todas as páginas)
       var email = val(form, 'input_2');
-      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { erro(form, 1, 'Informe um e-mail válido.', 'Receber notícias da DRC', 'Quero receber notícias. Meu e-mail: '); return; }
+      if (!RE_EMAIL.test(email)) { erro(form, 1, 'Informe um e-mail válido.', 'Receber notícias da DRC', 'Quero receber notícias. Meu e-mail: '); return; }
+      botao(form, true);
       envia('site-newsletter',
         { email: email, site: val(form, 'input_3'), origem: location.href },
-        function () { confirma(form, 'E-mail cadastrado. Obrigado.'); },
+        function () { confirma(form, 1, 'E-mail cadastrado. Obrigado.'); },
         function (m) { erro(form, 1, m, 'Receber notícias da DRC', 'Quero receber notícias. Meu e-mail: ' + email); });
     },
     2: function (form) { // contato
@@ -70,25 +103,27 @@
     4: function (form) { // trabalhe conosco (currículo segue por e-mail)
       var nome = val(form, 'input_1'), email = val(form, 'input_2'), tel = val(form, 'input_3');
       if (nome.length < 2 || tel.length < 8) { erro(form, 4, 'Preencha nome e telefone.', 'Trabalhe conosco — currículo', ''); return; }
+      if (!RE_EMAIL.test(email)) { erro(form, 4, 'Informe um e-mail válido.', 'Trabalhe conosco — currículo', ''); return; }
       var mailAssunto = 'Currículo — ' + nome;
-      var mailCorpo = 'Nome: ' + nome + '\nTelefone: ' + tel + (email ? '\nE-mail: ' + email : '') + '\n\n(Anexe aqui o seu currículo.)';
+      var mailCorpo = 'Nome: ' + nome + '\nTelefone: ' + tel + '\nE-mail: ' + email + '\n\n(Anexe aqui o seu currículo.)';
+      botao(form, true);
       envia('site-orcamento',
         { nome: nome, email: email, telefone: tel, segmento: 'Trabalhe Conosco',
           mensagem: 'Candidatura enviada pelo site. Currículo a receber por e-mail.',
           site: val(form, 'input_5'), origem: location.href },
-        function () {
-          confirma(form, 'Dados enviados. Para concluir, envie seu currículo para ' +
-            '<a href="mailto:' + EMAIL + '?subject=' + encodeURIComponent(mailAssunto) +
-            '&body=' + encodeURIComponent(mailCorpo) + '">' + EMAIL + '</a> citando seu nome.');
-        },
+        function () { confirma(form, 4, 'Dados enviados. Para concluir, envie seu currículo citando seu nome para', mailAssunto, mailCorpo); },
         function (m) { erro(form, 4, m, mailAssunto, mailCorpo); });
     },
     6: function (form) { // canal de comunicação (anônimo)
       var msg = val(form, 'input_5');
       if (msg.length < 10) { erro(form, 6, 'Descreva a sua comunicação.', 'Canal de Comunicação', ''); return; }
+      botao(form, true);
       envia('site-canal',
         { mensagem: msg, site: val(form, 'input_7'), origem: location.href },
-        function () { confirma(form, 'Mensagem registrada. Obrigado pela sua comunicação.'); },
+        function () {
+          confirma(form, 6, 'Mensagem registrada. Se desejar anexar documentos, envie para',
+            'Canal de Comunicação — anexos', 'Envio de documentos complementares à mensagem registrada no site.', 'denuncia@drcnet.com.br');
+        },
         function (m) { erro(form, 6, m, 'Canal de Comunicação', msg); });
     }
   };
@@ -100,11 +135,13 @@
       site: val(form, 'input_6'), origem: location.href
     };
     if (d.nome.length < 2 || d.telefone.length < 8) { erro(form, id, 'Preencha nome e telefone.', assunto, ''); return; }
+    if (!RE_EMAIL.test(d.email)) { erro(form, id, 'Informe um e-mail válido.', assunto, ''); return; }
+    if (!d.mensagem) { erro(form, id, 'Escreva a sua mensagem.', assunto, ''); return; }
     var corpo = 'Nome: ' + d.nome + (d.empresa ? '\nEmpresa: ' + d.empresa : '') +
-      '\nTelefone: ' + d.telefone + (d.email ? '\nE-mail: ' + d.email : '') +
-      (d.mensagem ? '\n\n' + d.mensagem : '');
+      '\nTelefone: ' + d.telefone + '\nE-mail: ' + d.email + '\n\n' + d.mensagem;
+    botao(form, true);
     envia('site-orcamento', d,
-      function () { confirma(form, okMsg); },
+      function () { confirma(form, id, okMsg); },
       function (m) { erro(form, id, m, assunto, corpo); });
   }
 
@@ -115,6 +152,10 @@
     if (!m || !mapa[+m[1]]) return;
     ev.preventDefault();
     ev.stopImmediatePropagation();
-    mapa[+m[1]](form);
+    try {
+      mapa[+m[1]](form);
+    } catch (e) {
+      erro(form, +m[1], null, 'Contato pelo site', '');
+    }
   }, true);
 })();
