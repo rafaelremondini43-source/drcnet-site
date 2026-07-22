@@ -1,0 +1,250 @@
+﻿<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Gestão — DRC</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="icon" href="favicon.ico" sizes="any">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Roboto+Condensed:wght@600;700&display=swap" rel="stylesheet">
+<style>
+:root{--navy:#012B81;--ink:#0c1a36;--bg:#f4f8fd;--line:rgba(12,26,54,.12);--ok:#0a7d33;--warn:#b25e00;--red:#E5342B}
+*{box-sizing:border-box;margin:0}
+body{font:15px/1.55 Inter,system-ui,sans-serif;color:var(--ink);background:var(--bg);min-height:100vh}
+a{color:var(--navy)}
+.bar{background:var(--navy);color:#fff;display:flex;align-items:center;gap:14px;padding:12px 20px;position:sticky;top:0;z-index:5}
+.bar img{height:34px}
+.bar .tag{font:600 13px 'Roboto Condensed';letter-spacing:.14em;text-transform:uppercase;opacity:.85}
+.bar .sp{flex:1}
+.bar button{background:#fff;color:var(--navy);border:0;border-radius:999px;padding:8px 16px;font:600 13px Inter;cursor:pointer}
+.wrap{max-width:1080px;margin:0 auto;padding:22px 20px 60px}
+.card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:20px}
+h1{font:700 26px 'Roboto Condensed';color:var(--navy);margin-bottom:6px}
+.muted{color:#5a6a86;font-size:13px}
+/* login */
+.login{max-width:380px;margin:9vh auto 0}
+.login .field{margin-top:14px}
+.login label{display:block;font:600 12px Inter;letter-spacing:.06em;text-transform:uppercase;color:#5a6a86;margin-bottom:6px}
+.login input{width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:10px;font:15px Inter}
+.login button{margin-top:18px;width:100%;background:var(--navy);color:#fff;border:0;border-radius:999px;padding:12px;font:600 15px Inter;cursor:pointer}
+.login .err{color:var(--red);font-size:13px;margin-top:12px;display:none}
+/* app */
+.tabs{display:flex;gap:8px;margin:18px 0 14px;flex-wrap:wrap}
+.tabs button{border:1px solid var(--line);background:#fff;border-radius:999px;padding:8px 16px;font:600 13px Inter;cursor:pointer;color:var(--ink)}
+.tabs button.on{background:var(--navy);color:#fff;border-color:var(--navy)}
+.tools{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:14px}
+.tools input[type=search]{flex:1;min-width:200px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;font:14px Inter}
+.tools select,.tools button{padding:9px 14px;border:1px solid var(--line);border-radius:10px;background:#fff;font:600 13px Inter;cursor:pointer}
+.item{background:#fff;border:1px solid var(--line);border-radius:14px;padding:16px 18px;margin-bottom:12px}
+.item .head{display:flex;gap:12px;align-items:baseline;flex-wrap:wrap}
+.item .nome{font:700 16px Inter}
+.item .quando{color:#5a6a86;font-size:12.5px;margin-left:auto;white-space:nowrap}
+.badge{font:600 11px Inter;letter-spacing:.05em;text-transform:uppercase;border-radius:999px;padding:3px 10px;background:#eef3fa;color:var(--navy)}
+.badge.novo{background:#e8f0ff}
+.badge.respondido{background:#e6f6ec;color:var(--ok)}
+.badge.em_atendimento{background:#fff3e3;color:var(--warn)}
+.badge.arquivado,.badge.concluido{background:#eee;color:#666}
+.badge.em_analise{background:#fff3e3;color:var(--warn)}
+.item .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:6px 18px;margin:10px 0 4px;font-size:13.5px}
+.item .grid b{font-weight:600;color:#5a6a86;font-size:11.5px;letter-spacing:.05em;text-transform:uppercase;display:block}
+.item .msg{white-space:pre-wrap;background:var(--bg);border-radius:10px;padding:10px 12px;margin-top:8px;font-size:14px}
+.item .act{display:flex;gap:10px;align-items:center;margin-top:12px;flex-wrap:wrap}
+.item .act select{padding:7px 10px;border:1px solid var(--line);border-radius:8px;font:600 13px Inter}
+.item .act input{flex:1;min-width:180px;padding:8px 10px;border:1px solid var(--line);border-radius:8px;font:13.5px Inter}
+.item .act .save{background:var(--navy);color:#fff;border:0;border-radius:8px;padding:8px 14px;font:600 13px Inter;cursor:pointer}
+.vazio{padding:40px;text-align:center;color:#5a6a86}
+.toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;border-radius:10px;padding:10px 18px;font-size:14px;opacity:0;transition:.25s;pointer-events:none;z-index:9}
+.toast.on{opacity:1}
+.hide{display:none!important}
+</style>
+</head>
+<body>
+<header class="bar hide" id="topo">
+  <img src="logo-drc-nav.png" alt="DRC">
+  <span class="tag">Gestão do site</span>
+  <span class="sp"></span>
+  <span class="muted" id="quem" style="color:#cdd9f2"></span>
+  <button id="sair" type="button">Sair</button>
+</header>
+
+<main class="wrap">
+  <!-- LOGIN -->
+  <div class="login card" id="login">
+    <h1>Acesso restrito</h1>
+    <p class="muted">Gestão dos pedidos do site da DRC.</p>
+    <form id="loginForm">
+      <div class="field"><label for="l_email">E-mail</label><input id="l_email" type="email" autocomplete="username" required></div>
+      <div class="field"><label for="l_senha">Senha</label><input id="l_senha" type="password" autocomplete="current-password" required></div>
+      <button type="submit" id="l_btn">Entrar</button>
+      <p class="err" id="l_err">Não foi possível entrar. Confira e-mail e senha.</p>
+    </form>
+  </div>
+
+  <!-- APP -->
+  <div class="hide" id="app">
+    <div class="tabs">
+      <button class="on" id="tabOrc" type="button">Orçamentos <span id="nOrc"></span></button>
+      <button id="tabCanal" type="button">Canal de Comunicação <span id="nCanal"></span></button>
+    </div>
+    <div class="tools">
+      <input type="search" id="busca" placeholder="Buscar por nome, empresa, cidade, texto…">
+      <select id="fStatus">
+        <option value="">Todos os status</option>
+        <option value="novo">Novos</option>
+        <option value="em_atendimento">Em atendimento</option>
+        <option value="respondido">Respondidos</option>
+        <option value="arquivado">Arquivados</option>
+      </select>
+      <button id="rec" type="button">Atualizar</button>
+      <button id="csv" type="button">Exportar CSV</button>
+    </div>
+    <div id="lista"></div>
+  </div>
+</main>
+<div class="toast" id="toast"></div>
+
+<script src="supabase.js"></script>
+<script>
+(function () {
+  'use strict';
+  var URL_SB = 'https://wycdpvcvwypxdbpzakym.supabase.co';
+  var KEY_SB = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind5Y2RwdmN2d3lweGRicHpha3ltIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE5NjMwMjUsImV4cCI6MjA5NzUzOTAyNX0.OqVywUeA0wA7NLqqfM7-0x8fn81BhQMWRvxOoyXTLbI';
+  var sb = window.supabase.createClient(URL_SB, KEY_SB, { auth: { persistSession: true, storageKey: 'drc-site-admin' } });
+
+  var $ = function (id) { return document.getElementById(id); };
+  var aba = 'orc';            // orc | canal
+  var dados = { orc: [], canal: [] };
+
+  function toast(m) { var t = $('toast'); t.textContent = m; t.classList.add('on'); setTimeout(function () { t.classList.remove('on'); }, 2600); }
+  function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+  function quando(iso) { try { return new Date(iso).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit' }); } catch (e) { return iso; } }
+
+  // ---------- sessão ----------
+  function mostraLogin() { $('login').classList.remove('hide'); $('app').classList.add('hide'); $('topo').classList.add('hide'); }
+  function mostraApp(mail) { $('login').classList.add('hide'); $('app').classList.remove('hide'); $('topo').classList.remove('hide'); $('quem').textContent = mail || ''; }
+
+  $('loginForm').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var b = $('l_btn'); b.disabled = true; b.textContent = 'Entrando…'; $('l_err').style.display = 'none';
+    sb.auth.signInWithPassword({ email: $('l_email').value.trim(), password: $('l_senha').value })
+      .then(function (r) {
+        if (r.error) { $('l_err').style.display = 'block'; return; }
+        mostraApp(r.data.user && r.data.user.email); carrega();
+      })
+      .finally(function () { b.disabled = false; b.textContent = 'Entrar'; });
+  });
+  $('sair').addEventListener('click', function () { sb.auth.signOut().then(function () { dados = { orc: [], canal: [] }; mostraLogin(); }); });
+
+  // ---------- dados ----------
+  function carrega() {
+    Promise.all([
+      sb.from('site_orcamentos').select('*').order('criado_em', { ascending: false }).limit(300),
+      sb.from('site_canal').select('*').order('criado_em', { ascending: false }).limit(300)
+    ]).then(function (rs) {
+      if (rs[0].error || rs[1].error) {
+        var err = (rs[0].error || rs[1].error);
+        if (/permission|policy|rls/i.test(err.message || '')) { toast('Esta conta não tem perfil de administrador.'); }
+        else { toast('Falha ao carregar: ' + (err.message || 'erro')); }
+        return;
+      }
+      dados.orc = rs[0].data || []; dados.canal = rs[1].data || [];
+      $('nOrc').textContent = '(' + dados.orc.filter(function (r) { return r.status === 'novo'; }).length + ' novos)';
+      $('nCanal').textContent = '(' + dados.canal.filter(function (r) { return r.status === 'novo'; }).length + ')';
+      render();
+    });
+  }
+
+  function passa(r, q) {
+    if (!q) return true;
+    var t = [r.nome, r.empresa, r.email, r.telefone, r.segmento, r.cidade, r.mensagem, r.contato, r.notas].join(' ').toLowerCase();
+    return t.indexOf(q) >= 0;
+  }
+
+  function render() {
+    var q = $('busca').value.trim().toLowerCase(), fs = $('fStatus').value, out = [], l = $('lista');
+    var rows = dados[aba].filter(function (r) { return passa(r, q) && (!fs || r.status === fs); });
+    if (!rows.length) { l.innerHTML = '<div class="card vazio">Nenhum registro por aqui.</div>'; return; }
+    rows.forEach(function (r) {
+      if (aba === 'orc') {
+        out.push('<div class="item" data-id="' + r.id + '"><div class="head"><span class="nome">' + esc(r.nome) + '</span>'
+          + (r.empresa ? '<span class="muted">· ' + esc(r.empresa) + '</span>' : '')
+          + '<span class="badge ' + esc(r.status) + '">' + esc(r.status).replace('_', ' ') + '</span>'
+          + (r.email_enviado ? '' : '<span class="badge" title="O aviso por e-mail ainda não foi enviado">aviso pendente</span>')
+          + '<span class="quando">' + quando(r.criado_em) + '</span></div>'
+          + '<div class="grid">'
+          + '<span><b>Telefone</b><a href="tel:' + esc(r.telefone) + '">' + esc(r.telefone) + '</a></span>'
+          + (r.email ? '<span><b>E-mail</b><a href="mailto:' + esc(r.email) + '">' + esc(r.email) + '</a></span>' : '')
+          + (r.segmento ? '<span><b>Segmento</b>' + esc(r.segmento) + '</span>' : '')
+          + (r.cidade ? '<span><b>Obra em</b>' + esc(r.cidade) + '</span>' : '')
+          + '</div>'
+          + (r.mensagem ? '<div class="msg">' + esc(r.mensagem) + '</div>' : '')
+          + '<div class="act"><select data-k="status">'
+          + ['novo', 'em_atendimento', 'respondido', 'arquivado'].map(function (s) { return '<option value="' + s + '"' + (r.status === s ? ' selected' : '') + '>' + s.replace('_', ' ') + '</option>'; }).join('')
+          + '</select><input data-k="notas" placeholder="Notas internas…" value="' + esc(r.notas || '') + '"><button class="save" type="button">Salvar</button></div></div>');
+      } else {
+        out.push('<div class="item" data-id="' + r.id + '"><div class="head"><span class="nome">Comunicação</span>'
+          + '<span class="badge ' + esc(r.status) + '">' + esc(r.status).replace('_', ' ') + '</span>'
+          + '<span class="quando">' + quando(r.criado_em) + '</span></div>'
+          + (r.contato ? '<div class="grid"><span><b>Contato informado</b>' + esc(r.contato) + '</span></div>' : '<p class="muted" style="margin-top:6px">Enviado anonimamente.</p>')
+          + '<div class="msg">' + esc(r.mensagem) + '</div>'
+          + '<div class="act"><select data-k="status">'
+          + ['novo', 'em_analise', 'concluido'].map(function (s) { return '<option value="' + s + '"' + (r.status === s ? ' selected' : '') + '>' + s.replace('_', ' ') + '</option>'; }).join('')
+          + '</select><input data-k="notas" placeholder="Notas internas…" value="' + esc(r.notas || '') + '"><button class="save" type="button">Salvar</button></div></div>');
+      }
+    });
+    l.innerHTML = out.join('');
+  }
+
+  $('lista').addEventListener('click', function (e) {
+    var b = e.target.closest('.save'); if (!b) return;
+    var it = b.closest('.item'), id = it.getAttribute('data-id');
+    var tabela = aba === 'orc' ? 'site_orcamentos' : 'site_canal';
+    var patch = { status: it.querySelector('[data-k=status]').value, notas: it.querySelector('[data-k=notas]').value.trim() || null, atualizado_em: new Date().toISOString() };
+    b.disabled = true; b.textContent = 'Salvando…';
+    sb.from(tabela).update(patch).eq('id', id).then(function (r) {
+      b.disabled = false; b.textContent = 'Salvar';
+      if (r.error) { toast('Não foi possível salvar: ' + r.error.message); return; }
+      var reg = dados[aba].find(function (x) { return x.id === id; });
+      if (reg) { reg.status = patch.status; reg.notas = patch.notas; }
+      toast('Salvo.'); render();
+    });
+  });
+
+  $('tabOrc').addEventListener('click', function () { aba = 'orc'; troca(); });
+  $('tabCanal').addEventListener('click', function () { aba = 'canal'; troca(); });
+  function troca() {
+    $('tabOrc').classList.toggle('on', aba === 'orc'); $('tabCanal').classList.toggle('on', aba === 'canal');
+    $('fStatus').innerHTML = aba === 'orc'
+      ? '<option value="">Todos os status</option><option value="novo">Novos</option><option value="em_atendimento">Em atendimento</option><option value="respondido">Respondidos</option><option value="arquivado">Arquivados</option>'
+      : '<option value="">Todos os status</option><option value="novo">Novos</option><option value="em_analise">Em análise</option><option value="concluido">Concluídos</option>';
+    render();
+  }
+  $('busca').addEventListener('input', render);
+  $('fStatus').addEventListener('change', render);
+  $('rec').addEventListener('click', carrega);
+
+  $('csv').addEventListener('click', function () {
+    var rows = dados[aba]; if (!rows.length) { toast('Nada para exportar.'); return; }
+    var cols = aba === 'orc'
+      ? ['criado_em', 'nome', 'empresa', 'telefone', 'email', 'segmento', 'cidade', 'mensagem', 'status', 'notas', 'origem']
+      : ['criado_em', 'mensagem', 'contato', 'status', 'notas'];
+    var csv = [cols.join(';')].concat(rows.map(function (r) {
+      return cols.map(function (c) { return '"' + String(r[c] == null ? '' : r[c]).replace(/"/g, '""').replace(/\r?\n/g, ' ') + '"'; }).join(';');
+    })).join('\r\n');
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8' }));
+    a.download = (aba === 'orc' ? 'orcamentos-site' : 'canal-comunicacao') + '-' + new Date().toISOString().slice(0, 10) + '.csv';
+    a.click(); URL.revokeObjectURL(a.href);
+  });
+
+  // boot: retoma sessão salva
+  sb.auth.getSession().then(function (r) {
+    var s = r.data && r.data.session;
+    if (s) { mostraApp(s.user && s.user.email); carrega(); } else { mostraLogin(); }
+  });
+})();
+</script>
+</body>
+</html>
