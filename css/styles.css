@@ -1,0 +1,786 @@
+/* ===========================================================================
+   DRC — Perfuração Direcional / Método Não Destrutivo · Landing v6 (UX pro)
+   Roboto Condensed (display) + Inter (corpo) + IBM Plex Mono (voz técnica)
+   Navy industrial · cantos retos · abertura ESCURA (hero+strip navy-ink),
+   corpo claro datasheet, fechamento navy · vermelho = SÓ conversão
+   Refs: Active Theory (escala/disciplina), igloo.inc (mono HUD),
+   Terminal Industries/TLC (blueprint) · motion contido
+
+   ARQUITETURA RESPONSIVA (refactor mobile 07/2026): o CSS base (daqui até a
+   "ZONA RESPONSIVA") descreve o DESKTOP. Todas as media queries de layout
+   vivem na zona, no fim do arquivo, em ordem DESCENDENTE de largura —
+   1400 → 1024 → 900 → 860 → 760 → 720 → 680 → 640 → 600 → 460 → preferências.
+   NÃO criar @media fora da zona; regra nova entra na posição ordenada.
+   =========================================================================== */
+
+:root{
+  /* marca */
+  --navy:#012B81; --navy-logo:#012A82;
+  --navy-ink:#010D26;                    /* fundo escuro além da marca (abertura/fechamento) */
+  --sky:#1E73BE; --sky-soft:#59A5D8;
+  --red:#E5342B; --red-deep:#c62b23; --green:#159a52;
+
+  /* tema claro (corpo arejado "Apple-web") */
+  --bg:#ffffff; --bg-2:#f4f8fd; --surface:#ffffff; --surface-2:#f7fafe;
+  --ink:#0c1a36; --muted:#54627a; --faint:#5f6e87;
+  --line:rgba(10,28,64,.10); --line-2:rgba(10,28,64,.05);
+
+  /* tema escuro (hero/strip/stats/footer) */
+  --d-text:#f2f6ff; --d-muted:#b8c4de; --d-faint:#8494b8;
+  --d-line:rgba(255,255,255,.16); --d-line-2:rgba(255,255,255,.08);
+
+  --font-display:'Roboto Condensed',Arial Narrow,system-ui,sans-serif;
+  --font-body:'Inter',system-ui,-apple-system,sans-serif;
+  --font-mono:'IBM Plex Mono',ui-monospace,'Cascadia Mono',Consolas,monospace;
+
+  --maxw:1320px; --pad:clamp(20px,4vw,72px);
+  --sec:clamp(88px,12vh,180px);
+  --ease:cubic-bezier(.215,.61,.355,1); --ease-out:cubic-bezier(.16,1,.3,1);
+
+  /* ARREDONDAMENTO (linguagem "DRC Precision" — Apple-web, bem arredondado) */
+  --r-xs:8px; --r-s:12px; --r-m:16px; --r-l:20px; --r-xl:24px; --r-full:9999px;
+  --radius:var(--r-m);   /* alias retrocompat (era 0 = cantos retos; agora 16px) */
+
+  /* ELEVAÇÃO (sombras em matiz navy da marca, nunca cinza puro) */
+  --e1:0 1px 2px rgba(10,28,64,.05), 0 2px 6px rgba(10,28,64,.05);
+  --e2:0 2px 6px rgba(10,28,64,.06), 0 14px 30px -18px rgba(10,28,64,.30);
+  --e3:0 20px 50px -28px rgba(1,43,129,.45);
+}
+
+*{box-sizing:border-box; margin:0; padding:0}
+html{-webkit-text-size-adjust:100%; background:var(--navy-ink)}  /* overscroll nas pontas mostra navy, nunca branco */
+/* sem scroll-behavior:smooth — o Lenis cuida da rolagem (CSS smooth + Lenis brigam e causam travamento) */
+body{
+  background:var(--bg); color:var(--ink); font-family:var(--font-body);
+  line-height:1.62; -webkit-font-smoothing:antialiased; overflow-x:hidden;
+}
+html.cursor-custom body{cursor:none}   /* só esconde o cursor nativo quando o cursor custom está ativo (JS confirmou pointer fino) */
+a{color:inherit; text-decoration:none}
+img,svg,video,canvas{display:block; max-width:100%}
+button{font:inherit; color:inherit}
+::selection{background:var(--navy); color:#fff}
+
+/* DISPLAY — Roboto Condensed; contraste de escala brutal entre H1 e H2 */
+h1,h2,h3{font-family:var(--font-display); font-weight:700; line-height:1.02; letter-spacing:-.01em}
+.display{font-size:clamp(2.9rem,7.6vw,6.9rem); font-weight:700; letter-spacing:-.018em; line-height:.97}
+.h2{font-size:clamp(1.8rem,3.8vw,3.2rem); font-weight:700}
+
+/* KICKERS / rótulos — IBM Plex Mono, a voz de datasheet do sistema */
+.kicker{font-family:var(--font-mono); font-size:.72rem; letter-spacing:.16em;
+  text-transform:uppercase; color:var(--sky); font-weight:500;
+  display:inline-flex; align-items:center; gap:14px}
+.kicker::before{content:""; width:32px; height:1px; background:var(--sky); opacity:.8; order:-1}
+.kicker[data-i]::after{content:attr(data-i); order:-2; color:var(--faint); font-weight:400; letter-spacing:.08em}
+
+.wrap{max-width:var(--maxw); margin:0 auto; padding-left:var(--pad); padding-right:var(--pad)}
+.lead{font-size:clamp(1.05rem,1.4vw,1.28rem); color:var(--muted); max-width:56ch; line-height:1.62}
+.lead b,.lead strong{color:var(--ink); font-weight:600}
+section{position:relative}
+/* rede de segurança p/ saltos de âncora nativos (Tab, link direto #hash, sem JS) —
+   o JS (go() em main.js) já compensa a nav dinamicamente; isto cobre o fallback */
+section[id],footer[id]{scroll-margin-top:104px}
+.sec{padding:var(--sec) 0}
+.eyebrow-row{margin-bottom:28px}
+
+/* MARGINALIA — régua técnica vertical na CALHA externa ao wrap (só telas largas,
+   onde existe gutter real fora do container de 1320px — senão colide com o conteúdo) */
+.marginalia{position:absolute; top:var(--sec); right:calc((100% - var(--maxw)) / 2 - 6px); z-index:1;
+  writing-mode:vertical-rl; font-family:var(--font-mono); font-size:.62rem; letter-spacing:.3em;
+  text-transform:uppercase; color:var(--faint); opacity:.5; display:flex; align-items:center; gap:14px}
+.marginalia::after{content:""; width:1px; height:72px; background:var(--line)}
+
+/* TICKS "+" de canto (estética prancha técnica) */
+.ticks{position:relative}
+.ticks::before,.ticks::after{content:"+"; position:absolute; z-index:2; font-family:var(--font-mono);
+  font-size:14px; line-height:1; color:var(--sky); opacity:.7; pointer-events:none}
+.ticks::before{top:-7px; left:-7px}
+.ticks::after{bottom:-7px; right:-7px}
+
+/* CURSOR — contextual: anel padrão · cresce em interação · vira vermelho sobre CTA */
+.cursor{position:fixed; top:0; left:0; width:34px; height:34px; border:1px solid var(--navy); border-radius:50%;
+  pointer-events:none; z-index:9999; transform:translate(-50%,-50%);
+  transition:width .3s var(--ease),height .3s var(--ease),background .3s,border-color .3s,opacity .3s}
+.cursor-dot{position:fixed; top:0; left:0; width:5px; height:5px; background:var(--navy); border-radius:50%;
+  pointer-events:none; z-index:9999; transform:translate(-50%,-50%); transition:background .3s}
+body.hovering .cursor{width:58px; height:58px; background:rgba(1,43,129,.08)}
+body.hovering-cta .cursor{width:58px; height:58px; border-color:var(--red); background:rgba(229,52,43,.08)}
+body.hovering-cta .cursor-dot{background:var(--red)}
+html:not(.cursor-custom) .cursor,html:not(.cursor-custom) .cursor-dot{display:none}  /* sem JS / pointer grosso: nenhum cursor falso congelado */
+html:not(.cursor-custom) .burger,html:not(.cursor-custom) .field input,html:not(.cursor-custom) .field select,html:not(.cursor-custom) .field textarea{cursor:auto}
+
+/* SCROLLBAR — trilho claro, thumb navy; cantos retos */
+::-webkit-scrollbar{width:12px}
+::-webkit-scrollbar-track{background:var(--bg-2); border-left:1px solid var(--line-2)}
+::-webkit-scrollbar-thumb{background:linear-gradient(180deg,var(--sky),var(--navy)); border:2px solid var(--bg-2)}
+::-webkit-scrollbar-thumb:hover{background:var(--navy)}
+html{scrollbar-width:thin; scrollbar-color:var(--navy) var(--bg-2)}
+
+/* REVEAL */
+.reveal{opacity:0; transform:translateY(30px); transition:opacity .8s var(--ease-out),transform .8s var(--ease-out)}
+.reveal.in{opacity:1; transform:none}
+.reveal[data-d="1"]{transition-delay:.08s}.reveal[data-d="2"]{transition-delay:.16s}
+.reveal[data-d="3"]{transition-delay:.24s}.reveal[data-d="4"]{transition-delay:.32s}
+.reveal[data-d="5"]{transition-delay:.4s}
+.lines .ln{display:block; overflow:hidden}
+.lines .ln > span{display:block; transform:translateY(106%); transition:transform .9s var(--ease-out)}
+.lines.in .ln > span{transform:none}
+.lines.in .ln:nth-child(2) > span{transition-delay:.09s}
+.lines.in .ln:nth-child(3) > span{transition-delay:.18s}
+.lines.in .ln:nth-child(4) > span{transition-delay:.27s}
+
+/* NAV — barra navy SÓLIDA (logo transparente branca funde em qualquer estado);
+   sem backdrop-filter (custo de perf + compõe mal com a logo). Ao rolar só encolhe + ganha sombra */
+.nav{position:fixed; inset:0 0 auto 0; z-index:100; padding:18px 0; background:var(--navy-logo);
+  border-bottom:1px solid rgba(255,255,255,.1);
+  transition:padding .4s var(--ease),box-shadow .4s}
+.nav.small{padding:11px 0; box-shadow:0 10px 30px -16px rgba(0,0,0,.7)}
+.nav .row{display:flex; align-items:center; gap:24px}
+.nav .logo{height:46px; width:auto; transition:height .4s var(--ease); user-select:none; -webkit-user-drag:none}
+.nav.small .logo{height:38px}
+.nav .links{margin-left:auto; display:flex; align-items:center; gap:26px}
+.nav .links a.navlink{font-family:var(--font-mono); font-size:.7rem; letter-spacing:.14em;
+  text-transform:uppercase; color:rgba(255,255,255,.82); transition:color .25s; position:relative}
+.nav .links a.navlink::after{content:""; position:absolute; left:0; bottom:-6px; width:100%; height:1px; background:var(--sky-soft); transform:scaleX(0); transform-origin:left; transition:transform .3s var(--ease)}
+.nav .links a.navlink:hover{color:#fff}
+.nav .links a.navlink:hover::after{transform:scaleX(1)}
+.nav .links a.navlink[aria-current="true"]{color:#fff}
+.nav .links a.navlink[aria-current="true"]::after{transform:scaleX(1)}
+.nav .links a.navbtn{font-family:var(--font-body); background:var(--red); border-color:var(--red); color:#fff}
+.nav .links a.navbtn:hover{background:var(--red-deep); border-color:var(--red-deep)}
+
+/* hamburger */
+.burger{display:none; margin-left:auto; width:44px; height:44px; border:1px solid rgba(255,255,255,.3); background:transparent; place-items:center; cursor:none}
+.burger span{display:block; width:18px; height:2px; background:#fff; position:relative; transition:.3s var(--ease)}
+.burger span::before,.burger span::after{content:""; position:absolute; left:0; width:18px; height:2px; background:#fff; transition:.3s var(--ease)}
+.burger span::before{top:-6px}.burger span::after{top:6px}
+body.menu-open .burger span{background:transparent}
+body.menu-open .burger span::before{top:0; transform:rotate(45deg)}
+body.menu-open .burger span::after{top:0; transform:rotate(-45deg)}
+
+/* mobile drawer — escuro, coerente com a abertura da página */
+.drawer{position:fixed; inset:0; z-index:99; background:var(--navy-ink); display:flex; flex-direction:column;
+  justify-content:center; gap:6px; padding:0 var(--pad); opacity:0; pointer-events:none; transform:translateY(-8px);
+  transition:opacity .35s var(--ease),transform .35s var(--ease)}
+body.menu-open .drawer{opacity:1; pointer-events:auto; transform:none}
+body.menu-open{overflow:hidden}   /* trava o scroll do fundo enquanto o menu modal está aberto */
+.drawer a{font-family:var(--font-display); font-weight:600; font-size:clamp(1.8rem,7vw,2.6rem); color:var(--d-text); padding:10px 0; border-bottom:1px solid var(--d-line-2)}
+.drawer a.navbtn{color:var(--red); border-bottom:0; margin-top:14px}
+
+/* BOTÕES — vermelho = eixo único de conversão (funciona no claro e no navy) */
+.btn{display:inline-flex; align-items:center; justify-content:center; gap:10px; font-family:var(--font-body);
+  font-weight:600; font-size:1rem; letter-spacing:.005em; padding:15px 28px;
+  border:1.5px solid var(--red); background:var(--red); color:#fff; border-radius:var(--r-full);
+  position:relative; transition:transform .25s var(--ease),background .25s,border-color .25s,box-shadow .25s}
+.btn svg{width:18px; height:18px}
+.btn .ar{transition:transform .3s var(--ease)}
+.btn:hover{background:var(--red-deep); border-color:var(--red-deep)} .btn:hover .ar{transform:translateX(4px)}
+.btn:active{transform:scale(.98)}                 /* micro-press "Apple" */
+.btn.big{padding:18px 34px; font-size:1.06rem}
+/* secundário: outline navy (padrão Apple "Comprar/Saber mais") — SÓ em superfície clara */
+.btn.ghost{background:transparent; border-color:var(--navy); color:var(--navy)}
+.btn.ghost:hover{background:rgba(1,43,129,.06); border-color:var(--navy)}
+.btn.ghost .ar{color:var(--navy)}
+.btn-row{display:flex; gap:16px; flex-wrap:wrap; align-items:center}
+.btn:focus-visible,a:focus-visible,summary:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px solid var(--sky); outline-offset:3px}
+
+/* HERO — a página abre CLARA (padrão Apple/frete.com): split texto + mídia
+   arredondada; navy vira ACENTO, não fundo. 1 CTA primário vermelho pill +
+   1 secundário outline navy (padrão "Comprar / Saber mais"). */
+.hero{position:relative; min-height:100svh; display:flex; align-items:center; padding:132px 0 84px; background:var(--bg)}
+.hero .wrap{position:relative; z-index:2; width:100%}
+.hero-grid{display:grid; grid-template-columns:1.05fr .95fr; gap:clamp(32px,5vw,72px); align-items:center}
+.hero-text{max-width:640px}
+.hero h1{color:var(--ink); max-width:15ch}
+.hero h1 .g{color:var(--sky)}
+.hero .lead{margin-top:24px; max-width:50ch; color:var(--muted)}
+.hero .lead b{color:var(--ink)}
+.hero .btn-row{margin-top:32px}
+.hero .kicker{color:var(--sky)} .hero .kicker::before{background:var(--sky)}
+.hero .trust{margin-top:32px; font-family:var(--font-mono); font-size:.7rem; font-weight:500; letter-spacing:.08em; text-transform:uppercase;
+  color:var(--faint); display:flex; align-items:center; gap:12px; flex-wrap:wrap}
+.hero .trust .dot{width:4px;height:4px;border-radius:50%;background:var(--sky-soft)}
+/* mídia do hero: card arredondado com foto/vídeo (Apple product-shot) */
+.hero-media{position:relative; border-radius:var(--r-xl); overflow:hidden; box-shadow:var(--e3); background:var(--bg-2); aspect-ratio:4/5; width:100%; max-height:78svh; margin-inline:auto}
+.hero-media img,.hero-media video{position:absolute; inset:0; width:100%; height:100%; object-fit:cover; display:block}
+.hero-textlink{display:inline-flex; align-items:center; gap:8px; font-family:var(--font-body); font-weight:600; font-size:1rem; color:var(--navy); padding:10px 2px; border-bottom:2px solid rgba(1,43,129,.3); transition:color .25s,border-color .25s}
+.hero-textlink .ar{transition:transform .3s var(--ease)}
+.hero-textlink:hover{border-bottom-color:var(--navy)} .hero-textlink:hover .ar{transform:translateY(3px)}
+
+/* CREDIBILITY STRIP — continua o bloco escuro da abertura; counters ≠ selos */
+.strip{background:var(--bg-2); border-top:1px solid var(--line); border-bottom:1px solid var(--line)}
+.strip .wrap{display:grid; grid-template-columns:repeat(4,1fr); gap:0; padding-top:0; padding-bottom:0}
+.strip .item{display:flex; flex-direction:column; gap:4px; padding:30px 28px; border-left:1px solid var(--line)}
+.strip .item:first-child{border-left:0; padding-left:0}
+.strip .item b{font-family:var(--font-display); font-size:2rem; font-weight:700; color:var(--navy); line-height:1; font-variant-numeric:tabular-nums}
+.strip .item b.tag{font-family:var(--font-mono); font-size:1.05rem; font-weight:600; letter-spacing:.08em; color:var(--sky); padding-top:8px}
+.strip .item span{font-family:var(--font-mono); font-size:.62rem; letter-spacing:.14em; text-transform:uppercase; color:var(--faint)}
+
+/* === DRILL-PATH (assinatura) === */
+.signature{background:var(--bg-2); padding:var(--sec) 0; overflow:hidden}
+.signature .wrap{position:relative; z-index:1}
+.sig-head{max-width:60ch; margin-bottom:44px}
+.sig-head h2{margin-top:18px}
+.sig-stage{position:relative; border:1px solid var(--line); border-radius:var(--r-l); overflow:hidden; box-shadow:var(--e1); background:var(--surface)}
+.sig-stage svg{width:100%; height:auto; display:block}
+.drill-ground{fill:rgba(10,28,64,.05)}
+.drill-surface{stroke:var(--line); stroke-width:1.5; fill:none}
+.obstacle{fill:rgba(89,165,216,.06); stroke:rgba(89,165,216,.3); stroke-width:1}
+.icon-line{stroke:var(--muted); stroke-width:1.5; fill:none}
+.trench{stroke:var(--red); stroke-width:2; stroke-dasharray:5 6; fill:none; opacity:.55}
+.bore-guide{stroke:rgba(1,43,129,.1); stroke-width:2; fill:none}
+.bore{stroke:var(--sky); stroke-width:3.5; fill:none; stroke-linecap:round}
+.duct{stroke:var(--sky-soft); stroke-width:8; fill:none; stroke-linecap:round; opacity:.25}
+.bit{fill:var(--sky)}
+.bit-ring{fill:none; stroke:var(--sky); stroke-width:1.5; opacity:.6}
+.pt{fill:var(--surface); stroke:var(--line); stroke-width:1.5; transition:stroke .4s, fill .4s}
+.pt.on{stroke:var(--sky); fill:var(--navy)}
+.sig-label{font-family:var(--font-mono); font-size:13px; fill:var(--faint); letter-spacing:.08em}
+.sig-label.warn{fill:var(--red)}
+.sig-label.on{fill:var(--sky)}
+.sig-seal{margin-top:34px; display:flex; flex-wrap:wrap; gap:14px}
+.sig-seal .chip{font-family:var(--font-mono); font-size:.74rem; letter-spacing:.04em; color:var(--ink);
+  border:1px solid var(--line); border-radius:var(--r-full); padding:11px 18px; display:inline-flex; align-items:center; gap:10px; background:var(--surface-2)}
+.sig-seal .chip svg{width:16px; height:16px; color:var(--sky)}
+
+/* MÉTODO (4 passos) */
+.steps{margin-top:56px; border-top:1px solid var(--line)}
+.step{display:grid; grid-template-columns:96px 1fr auto; gap:30px; padding:38px 0; border-bottom:1px solid var(--line); align-items:center; transition:background .4s}
+.step:hover{background:linear-gradient(90deg,rgba(1,43,129,.04),transparent)}
+.step .n{font-family:var(--font-mono); font-weight:500; font-size:2.2rem; color:var(--sky); transition:color .4s,transform .4s var(--ease)}
+.step:hover .n{color:var(--navy); transform:translateX(6px)}
+.step .b b{font-family:var(--font-display); font-size:clamp(1.35rem,2.4vw,1.9rem); font-weight:600; display:block; margin-bottom:8px; letter-spacing:-.01em}
+.step .b p{color:var(--muted); max-width:60ch; font-size:1.04rem}
+.step .ico{width:46px; height:46px; color:var(--sky); opacity:.9}
+.step .ico svg{width:100%; height:100%}
+
+/* NÚMEROS / PROVA — momento tipográfico GIGANTE: +1.000 km herói, 3 coadjuvantes */
+.stats-band{background:radial-gradient(120% 140% at 80% 0%,rgba(89,165,216,.2),transparent 60%),var(--navy); overflow:hidden}
+.stats-band::before{content:""; position:absolute; inset:0; background:url("../assets/img/rig-urbana.jpg") center/cover; opacity:.08; z-index:0}
+.stats-band .wrap{position:relative; z-index:1}
+.stats-band .kicker{color:var(--sky-soft)}
+.stats-band .kicker::before{background:var(--sky-soft)}
+.stats-band .kicker[data-i]::after{color:rgba(255,255,255,.5)}
+.stat-hero{border-bottom:1px solid var(--d-line); padding-bottom:34px; margin-bottom:34px}
+.stat-hero .num{font-family:var(--font-display); font-weight:700; font-size:clamp(4.2rem,12vw,10.5rem); line-height:.92; letter-spacing:-.02em; color:#fff; font-variant-numeric:tabular-nums; white-space:nowrap}
+.stat-hero .num .u{color:var(--sky-soft)}
+.stat-hero .lb{font-family:var(--font-mono); font-size:.72rem; letter-spacing:.14em; text-transform:uppercase; color:var(--d-muted); margin-top:14px}
+.stats{display:grid; grid-template-columns:repeat(3,1fr); gap:28px; text-align:left}
+.stat .num{font-family:var(--font-display); font-weight:700; font-size:clamp(2.2rem,4.4vw,3.4rem); color:#fff; line-height:1; font-variant-numeric:tabular-nums; white-space:nowrap}
+.stat .num .u{color:var(--sky-soft); font-size:.66em}
+.stat .lb{color:var(--d-muted); font-size:.88rem; margin-top:10px; max-width:26ch; line-height:1.45}
+.stat{padding-left:22px; border-left:1px solid var(--d-line)}
+
+/* SEGMENTOS — fotos reais protagonistas: scrim mais leve, nº gigante, hover que revela */
+.seg-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin-top:54px}
+.seg{position:relative; overflow:hidden; border:1px solid var(--line); border-radius:var(--r-l); box-shadow:var(--e1); min-height:340px; display:flex; flex-direction:column; justify-content:flex-end; padding:28px; isolation:isolate}
+.seg .bg{position:absolute; inset:0; z-index:-2}
+.seg .bg img{width:100%; height:100%; object-fit:cover; transition:transform .7s var(--ease),filter .7s var(--ease); filter:brightness(.92)}
+.seg::after{content:""; position:absolute; inset:0; z-index:-1; transition:opacity .5s var(--ease);
+  background:linear-gradient(0deg,rgba(2,10,30,.88) 4%,rgba(2,10,30,.42) 46%,rgba(2,10,30,.12))}
+.seg:hover .bg img{transform:scale(1.05); filter:brightness(1.04)}
+.seg .top-rule{position:absolute; top:0; left:0; height:3px; width:0; background:var(--red); transition:width .5s var(--ease)}
+.seg:hover .top-rule{width:100%}
+.seg .seg-no{position:absolute; top:18px; right:20px; font-family:var(--font-display); font-weight:700; font-size:clamp(2.4rem,3.4vw,3.2rem); line-height:1; color:rgba(255,255,255,.42); transition:color .4s; font-variant-numeric:tabular-nums; text-shadow:0 1px 14px rgba(2,10,30,.55)}
+.seg:hover .seg-no{color:rgba(255,255,255,.75)}
+.seg h3{font-size:clamp(1.4rem,2.2vw,1.9rem); font-weight:700; color:#fff}
+.seg p{color:rgba(255,255,255,.88); font-size:.95rem; margin-top:8px; max-width:40ch}
+.seg .go{margin-top:16px; font-family:var(--font-body); font-weight:600; font-size:.84rem; color:#fff; display:inline-flex; gap:8px; align-items:center; opacity:.85; transition:opacity .3s}
+.seg:hover .go{opacity:1}
+.seg .go .ar{transition:transform .3s var(--ease); color:var(--sky-soft)}
+.seg:hover .go .ar{transform:translateX(5px)}
+
+/* OBRA EM DESTAQUE (cine) — min-height (não height fixo) deixa o box crescer se o
+   conteúdo precisar; padding-top:104px dá folga estrutural pro título nunca nascer
+   colado no topo e ser "comido" pela nav fixa ao rolar até a seção */
+.cine{position:relative; min-height:max(640px,84vh); display:flex; align-items:flex-end; overflow:hidden}
+.cine .media{position:absolute; inset:0; z-index:0}
+.cine .media img{width:100%;height:100%;object-fit:cover}
+.cine .media::after{content:""; position:absolute; inset:0;
+  background:linear-gradient(90deg,rgba(1,13,38,.88) 0%,rgba(1,13,38,.58) 42%,rgba(1,13,38,.2) 70%,transparent 88%),
+             linear-gradient(0deg,rgba(1,13,38,.7) 0%,transparent 38%)}
+.cine .wrap{position:relative; z-index:2; padding-top:104px; padding-bottom:clamp(48px,8vh,96px); width:100%}
+.cine .cap{font-family:var(--font-mono); font-size:.72rem; letter-spacing:.12em; text-transform:uppercase; color:var(--sky-soft); margin-bottom:16px; border-left:2px solid var(--sky); padding:4px 0 4px 18px}
+.cine h2{max-width:22ch; color:#fff; text-wrap:balance; line-height:1.05; letter-spacing:-.01em}
+.cine .lead{margin-top:16px; color:rgba(255,255,255,.88); max-width:46ch}
+.cine .lead b{color:#fff}
+
+/* FROTA */
+.fleet{display:grid; grid-template-columns:1.15fr .85fr; gap:clamp(30px,5vw,72px); align-items:center; margin-top:48px}
+.fleet-photo{position:relative; overflow:hidden; border-radius:var(--r-l); align-self:stretch; min-height:340px}
+.fleet-photo img{position:absolute; inset:0; width:100%; height:100%; object-fit:cover; filter:contrast(1.04)}
+.fleet-photo::after{content:""; position:absolute; inset:0; border:1px solid var(--line); background:linear-gradient(0deg,rgba(2,10,30,.45),transparent 50%)}
+.fleet-band{margin-bottom:26px}
+.fleet-band .bl{font-family:var(--font-mono); font-size:.66rem; letter-spacing:.18em; text-transform:uppercase; color:var(--faint); padding-bottom:10px; border-bottom:1px solid var(--line); margin-bottom:6px}
+.fleet-row{display:flex; flex-wrap:wrap; gap:0}
+.fleet-row .m{font-family:var(--font-body); font-size:.92rem; color:var(--ink); padding:11px 16px 11px 0; margin-right:16px; border-bottom:1px solid var(--line-2); display:inline-flex; align-items:center; gap:9px; transition:color .25s}
+.fleet-row .m::before{content:""; width:6px; height:6px; background:var(--sky); opacity:.6; flex:0 0 auto}
+.fleet-row .m:hover{color:var(--navy)}
+/* CTA da frota (o margin era inline no HTML; virou classe p/ o mobile poder compactar) */
+.fleet-cta{margin-top:48px}
+
+/* EMPRESA / CONFIANÇA */
+.company{display:grid; grid-template-columns:1fr 1fr; gap:clamp(30px,5vw,72px); align-items:center; margin-top:30px}
+.company .lead{margin-top:22px}
+.certs{display:flex; flex-wrap:wrap; gap:14px; margin-top:8px}
+.cert{border:1px solid var(--line); border-radius:var(--r-m); padding:16px 20px; display:flex; align-items:center; gap:16px; min-width:150px; background:var(--surface-2)}
+.cert b{display:block; font-family:var(--font-display); font-weight:700; font-size:1.15rem}
+.cert .lab-s{font-family:var(--font-mono); font-size:.62rem; letter-spacing:.08em; text-transform:uppercase; color:var(--faint)}
+/* selos de certificação oficiais — imagens reais sobre tile branco (padrão de credibilidade) */
+.seal-tile{background:#fff; border:1px solid rgba(0,0,0,.08); border-radius:var(--r-xs); width:64px; height:64px; flex:0 0 auto; display:flex; align-items:center; justify-content:center; padding:7px}
+.seal-tile img{width:100%; height:100%; object-fit:contain; display:block}
+.abratt-tile{font-family:var(--font-display); font-weight:700; font-size:.96rem; color:var(--navy); letter-spacing:.03em}
+
+/* CTA intermediário */
+.midcta{background:var(--navy); position:relative; overflow:hidden}
+.midcta::before{content:""; position:absolute; inset:0; background:radial-gradient(120% 140% at 80% 0%,rgba(89,165,216,.2),transparent 60%)}
+.midcta .wrap{position:relative; z-index:1; display:flex; align-items:center; justify-content:space-between; gap:36px; flex-wrap:wrap; padding-top:clamp(56px,8vh,96px); padding-bottom:clamp(56px,8vh,96px)}
+.midcta h2{max-width:18ch; color:#fff}
+.midcta .btn-row{flex:0 0 auto}
+
+/* CONTATO / ORÇAMENTO */
+.contact{background:var(--bg-2)}
+.contact-grid{display:grid; grid-template-columns:1.05fr .95fr; gap:clamp(34px,5vw,72px); margin-top:46px; align-items:start}
+.form{display:flex; flex-direction:column; gap:16px}
+.field{display:flex; flex-direction:column; gap:7px}
+.field.row2{display:grid; grid-template-columns:1fr 1fr; gap:16px}
+.field label{font-family:var(--font-mono); font-size:.66rem; letter-spacing:.1em; text-transform:uppercase; color:var(--muted)}
+.field input,.field select,.field textarea{width:100%; background:var(--surface); border:1px solid var(--line); border-radius:var(--r-s);
+  padding:14px 16px; color:var(--ink); font-family:var(--font-body); font-size:1rem; cursor:none; transition:border-color .25s,box-shadow .25s}
+.field textarea{min-height:110px; resize:vertical}
+.field input:focus,.field select:focus,.field textarea:focus{outline:none; border-color:var(--navy); box-shadow:0 0 0 3px rgba(1,43,129,.14)}
+.field input.bad,.field select.bad{border-color:var(--red)}
+.field select{appearance:none; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23012B81' stroke-width='1.6' fill='none'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:right 16px center}
+.form .btn{justify-content:center; margin-top:4px}
+.form-note{font-family:var(--font-mono); font-size:.66rem; letter-spacing:.02em; color:var(--faint); display:flex; gap:8px; align-items:center}
+.form-err{color:var(--red); font-size:.86rem; margin-top:-4px}
+.form-ok{display:none; border:1px solid var(--green); background:rgba(37,180,106,.1); padding:16px 18px; color:var(--ink); font-size:.95rem}
+.form.sent .form-ok{display:block}
+
+.contact-info{display:flex; flex-direction:column; gap:10px}
+.ci-card{border:1px solid var(--line); border-radius:var(--r-m); padding:22px 24px; background:var(--surface-2); transition:border-color .25s,background .25s,box-shadow .25s}
+a.ci-card:hover{border-color:var(--navy); background:#fff; box-shadow:var(--e2)}
+.ci-card .lab{font-family:var(--font-mono); font-size:.62rem; letter-spacing:.14em; text-transform:uppercase; color:var(--faint); margin-bottom:8px; display:flex; align-items:center; gap:9px}
+.ci-card .lab svg{width:15px; height:15px; color:var(--sky)}
+.ci-card .val{font-size:1.08rem; color:var(--ink); line-height:1.5}
+.ci-card a.val:hover{color:var(--navy)}
+.ci-map{border:1px solid var(--line); border-radius:var(--r-m); overflow:hidden; margin-top:4px}
+.ci-map iframe{width:100%; height:220px; border:0; display:block; filter:grayscale(.25) sepia(.16) hue-rotate(185deg) saturate(1.25) brightness(.92)}
+
+/* RODAPÉ — a página fecha em navy (arco cromático completo) */
+.foot{padding:72px 0 40px; background:var(--navy-logo); color:var(--d-text); border-top:1px solid var(--d-line-2)}
+.foot .top{display:grid; grid-template-columns:1.4fr 1fr 1fr; gap:40px; align-items:start}
+.foot .logo{height:40px; margin-bottom:18px}
+.foot .pos{color:var(--d-muted); max-width:40ch; font-size:.96rem}
+.foot .fcol h4{font-family:var(--font-mono); font-size:.64rem; letter-spacing:.16em; text-transform:uppercase; color:var(--d-faint); margin-bottom:16px; font-weight:500}
+.foot .fcol a,.foot .fcol p{display:block; color:var(--d-muted); font-size:.95rem; padding:5px 0; transition:color .25s}
+.foot .fcol a:hover{color:#fff}
+.foot .fcerts{display:flex; gap:10px; margin-top:20px; align-items:center; flex-wrap:wrap}
+.foot .fcerts .seal-tile{width:58px; height:58px; padding:6px; border:0}
+.foot .fcerts .abratt-tile{font-size:.84rem}
+/* dados oficiais do CNPJ (razão social, CNPJ, IE, capital, fundação) ficam SÓ no JSON-LD (SEO) — não exibidos aqui */
+.foot .cr{margin-top:48px; padding-top:24px; border-top:1px solid var(--d-line-2); font-family:var(--font-mono); font-size:.68rem; letter-spacing:.04em; color:var(--d-faint); display:flex; justify-content:space-between; gap:16px; flex-wrap:wrap}
+
+/* floating CTA — vermelho, mesmo eixo de conversão */
+.cta-float{position:fixed; z-index:90; left:16px; right:16px; bottom:calc(16px + env(safe-area-inset-bottom));
+  display:none; gap:10px; opacity:0; transform:translateY(20px); pointer-events:none;
+  transition:opacity .4s var(--ease),transform .4s var(--ease)}
+.cta-float a{flex:1; display:inline-flex; align-items:center; justify-content:center; gap:9px;
+  font-family:var(--font-body); font-weight:600; font-size:.98rem; padding:16px 18px; color:#fff;
+  border:1px solid rgba(255,255,255,.5); border-radius:var(--r-full); box-shadow:var(--e3)}
+.cta-float .cf-orc{background:var(--red)}
+.cta-float .cf-orc:hover{background:var(--red-deep)}
+.cta-float.show{opacity:1; transform:none; pointer-events:auto}
+/* (a variante desktop ≥861 do cta-float vive na ZONA RESPONSIVA, com as demais queries) */
+
+/* skip link */
+.skip{position:absolute; left:-999px; top:0; z-index:200; background:var(--navy); color:#fff; padding:10px 16px; font-weight:600}
+.skip:focus{left:0}
+
+/* helpers */
+.cine .media{will-change:transform}   /* parallax fluido (padrão Krono) */
+
+/* ===== FROTA — datasheet: número + barra ANCORADOS no mesmo eixo ===== */
+.fleet-ds{margin-top:40px;border:1px solid var(--line);background:var(--surface-2);border-radius:var(--r-m);overflow:hidden;box-shadow:var(--e1)}
+.fleet-ds table{width:100%;border-collapse:collapse;font-size:.92rem}
+.fleet-ds caption{caption-side:top;text-align:left;font-family:var(--font-mono);font-size:.64rem;letter-spacing:.18em;text-transform:uppercase;color:var(--faint);font-weight:500;padding:16px 20px;border-bottom:1px solid var(--line);background:#fff}
+.fleet-ds thead th{font-family:var(--font-mono);font-size:.64rem;letter-spacing:.12em;text-transform:uppercase;color:var(--navy);font-weight:600;text-align:left;padding:14px 20px;border-bottom:1px solid var(--line);background:#fff;white-space:nowrap}
+.fleet-ds th.num,.fleet-ds td.num{white-space:nowrap}
+.fleet-ds tbody td{padding:15px 20px;border-bottom:1px solid var(--line-2);vertical-align:middle}
+.fleet-ds tbody tr:last-child td{border-bottom:0}
+.fleet-ds tbody tr{position:relative;transition:background .25s;box-shadow:inset 0 0 0 0 var(--navy)}
+.fleet-ds tbody tr:hover{background:rgba(1,43,129,.045);box-shadow:inset 3px 0 0 0 var(--navy)}
+.ds-eq{font-family:var(--font-display);font-weight:700;font-size:1.18rem;letter-spacing:-.01em;color:var(--ink);line-height:1.1}
+.ds-eq small{display:block;font-family:var(--font-mono);font-weight:400;font-size:.66rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-top:4px}
+.ds-cell{display:flex;align-items:center;gap:14px}
+.ds-tf{font-family:var(--font-mono);font-weight:600;font-size:1.24rem;line-height:1;color:var(--navy);font-variant-numeric:tabular-nums;min-width:3.2ch;text-align:right}
+.ds-tf span{font-weight:400;font-size:.68rem;color:var(--faint);margin-left:3px}
+.ds-app{color:var(--muted);max-width:38ch}
+.ds-app b{color:var(--ink);font-weight:600}
+.ds-bar{position:relative;display:block;height:5px;border-radius:var(--r-full);background:var(--line-2);width:100%;max-width:180px;overflow:hidden}
+.ds-bar i{position:absolute;inset:0 auto 0 0;border-radius:var(--r-full);background:var(--sky);transform:scaleX(0);transform-origin:left;transition:transform 1.1s var(--ease-out) .2s}
+.fleet-ds.reveal.in .ds-bar i{transform:none}
+.fleet-ds tfoot td{padding:16px 20px;border-top:2px solid var(--line);background:#fff;font-size:.82rem;color:var(--faint)}
+.fleet-ds tfoot b{color:var(--ink);font-weight:600;font-variant-numeric:tabular-nums}
+.fleet-ds tfoot .ds-env{display:flex;flex-wrap:wrap;gap:8px 28px;align-items:baseline;font-family:var(--font-mono);font-size:.78rem}
+.fleet-ds tfoot .ds-env .k{color:var(--navy);font-size:.62rem;letter-spacing:.12em;text-transform:uppercase;font-weight:600}
+.ft-note{font-size:.8rem; color:var(--faint); margin-top:16px; max-width:84ch}
+.cap{border-left:2px solid var(--sky); padding:4px 0 4px 18px}
+
+/* comparação vala × MND — semântica por material: ruim dashed/apagado, bom sólido */
+.compare{display:grid; grid-template-columns:1fr 1fr; gap:18px; margin-top:50px}
+.compare .col{border:1px solid var(--line); border-radius:var(--r-m); padding:clamp(24px,3vw,34px); background:var(--surface-2)}
+.compare .col.bad{background:transparent; border-style:dashed}
+.compare .col h3{font-size:1.2rem; margin-bottom:22px; font-weight:600}
+.compare .col.bad h3{color:var(--muted)} .compare .col.good h3{color:var(--navy)}
+.compare ul{list-style:none; display:flex; flex-direction:column; gap:15px}
+.compare li{display:flex; gap:13px; font-size:1.02rem; color:var(--ink); line-height:1.5}
+.compare li .i{flex:0 0 auto; margin-top:3px; width:18px; height:18px}
+.compare .col.bad li{color:var(--muted)} .compare .col.bad li .i{color:var(--red)}
+.compare .col.good li .i{color:var(--sky)}
+.compare .col.good{box-shadow:var(--e3)}
+
+/* FAQ — assinado: Q.01–Q.10 em mono navy, resposta deslocada, + vira × */
+.faq{margin-top:48px; border-top:1px solid var(--line)}
+.qa{border-bottom:1px solid var(--line)}
+.qa summary{list-style:none; cursor:pointer; padding:24px 4px; display:flex; gap:20px; align-items:center;
+  font-family:var(--font-display); font-weight:600; font-size:clamp(1.1rem,1.9vw,1.45rem); letter-spacing:-.01em}
+html.cursor-custom .qa summary{cursor:none}
+.qa summary::-webkit-details-marker{display:none}
+.qa .qno{flex:0 0 auto; font-family:var(--font-mono); font-weight:500; font-size:.72rem; letter-spacing:.08em; color:var(--navy); min-width:44px; font-variant-numeric:tabular-nums}
+.qa .ic{flex:0 0 auto; margin-left:auto; width:32px; height:32px; border:1px solid var(--line); border-radius:var(--r-full); display:grid; place-items:center; color:var(--navy); transition:.35s var(--ease); font-family:var(--font-mono)}
+.qa[open] .ic{transform:rotate(45deg); background:var(--navy); color:#fff; border-color:var(--navy)}
+.qa .ans{display:grid; grid-template-rows:0fr; transition:grid-template-rows .4s var(--ease)}
+.qa[open] .ans{grid-template-rows:1fr}
+.qa .ans>div{overflow:hidden}
+.qa .ans p{color:var(--muted); font-size:1.04rem; padding:0 4px 26px 64px; max-width:82ch}
+
+/* CTA na seção drill-path (zona quente sem conversão) */
+.sig-cta{margin-top:32px}
+/* prova social no form — linha de texto enxuta (selos completos ficam em Empresa + rodapé) */
+.form-trust{display:flex; align-items:center; gap:9px; padding:6px 0 2px; font-size:.82rem; color:var(--muted); line-height:1.45}
+.form-trust svg{width:15px; height:15px; color:var(--sky); flex:0 0 auto}
+
+/* QW5 — após o envio, some o formulário e fica só a confirmação (evita reenvio/2 conversas) */
+.form.sent .field,.form.sent .row2,.form.sent .form-trust,
+.form.sent #formSend,.form.sent .form-note,.form.sent .form-err{display:none}
+.form.sent{gap:0}
+
+/* ===== ritmo de contraste (tints deliberados nas seções claras irmãs) ===== */
+#comparacao,#empresa{background:var(--bg-2)}
+.cert,.ci-card{box-shadow:var(--e2)}
+/* diferencial: chips de benefício logo abaixo do título, antes do esquema; CTA destacado */
+.signature .wrap{display:flex; flex-direction:column; align-items:flex-start}
+.signature .sig-head{order:1; margin-bottom:22px}
+.signature .sig-seal{order:2; margin-top:0; margin-bottom:30px}
+.signature .sig-stage{order:3; align-self:stretch}
+.signature .sig-cta{order:4}
+.signature .hero-textlink{color:var(--navy); border-bottom-color:rgba(1,43,129,.32)}
+.signature .hero-textlink:hover{border-bottom-color:var(--navy)}
+
+/* ===== clientes — mural de LOGOS: tile branco, cinza->cor no hover ===== */
+.clients .h2{max-width:26ch}
+.client-grid{list-style:none; display:grid; grid-template-columns:repeat(auto-fill,minmax(185px,1fr)); gap:14px; margin-top:40px}
+.client-grid li{display:flex; align-items:center; justify-content:center; text-align:center; min-height:80px; padding:14px 16px;
+  border:1px solid var(--line); border-radius:var(--r-m); box-shadow:var(--e1); background:var(--surface-2); color:var(--navy);
+  font-family:var(--font-display); font-weight:700; font-size:1.18rem; letter-spacing:.01em;
+  transition:border-color .3s,background .3s,color .3s,box-shadow .3s}
+.client-grid.logos{grid-template-columns:repeat(auto-fill,minmax(200px,1fr))}
+.client-grid.logos li{min-height:104px; background:#fff; padding:20px 24px}
+.client-grid.logos li img{max-width:100%; max-height:54px; width:auto; object-fit:contain; filter:grayscale(1) opacity(.62); transition:filter .35s}
+.client-grid.logos li:hover{border-color:var(--navy)}
+.client-grid.logos li:hover img{filter:none}
+
+/* ficha de caso (Obra em destaque) sobre fundo escuro */
+.cine-spec{list-style:none; display:flex; flex-wrap:wrap; gap:16px 40px; margin-top:26px; max-width:620px; align-items:flex-end}
+.cine-spec li{display:flex; flex-direction:column; gap:4px}
+.cine-spec b{font-family:var(--font-display); font-weight:700; font-size:clamp(1.3rem,2.4vw,1.95rem); color:#fff; line-height:1; font-variant-numeric:tabular-nums}
+.cine-spec span{font-family:var(--font-mono); font-size:.62rem; letter-spacing:.1em; text-transform:uppercase; color:rgba(255,255,255,.78)}
+.cine-spec li.hero-spec{padding-right:40px; border-right:1px solid rgba(255,255,255,.28)}
+.cine-spec li.hero-spec b{font-size:clamp(1.7rem,3vw,2.4rem)}
+.cta-reassure{font-family:var(--font-mono); font-size:.68rem; letter-spacing:.06em; color:rgba(255,255,255,.72); margin-top:12px}
+
+/* defaults desktop de elementos que SÓ existem no mobile */
+/* comparação: o summary do acordeão só existe no mobile (desktop = [open], summary oculto) */
+.compare details.col > summary{display:none}
+/* rail/hint do carrossel de segmentos: só no mobile */
+.seg-rail{display:none}
+/* sem JS a barra de progresso do carrossel congelaria em 16% (mentira) — some */
+html.no-js .seg-prog{display:none}
+
+/* =====================================================================
+   ZONA RESPONSIVA — TODAS as media queries de layout vivem aqui, em
+   ordem DESCENDENTE de largura. O bloco ≤600 (mobile-native, v10) vence
+   os anteriores por ORDEM na cascata — isso é proposital: não inserir
+   regra responsiva depois dele (exceto ≤460 e as queries de preferência).
+   Desktop ≥861px: nada aqui pode alterá-lo.
+   ===================================================================== */
+
+@media(min-width:861px){.cta-float{display:flex; left:auto; right:24px; bottom:24px; width:auto}
+  .cta-float a{flex:0 0 auto; padding:13px 22px}}
+
+@media(max-width:1400px){.marginalia{display:none}}
+
+@media(max-width:1024px){
+  .nav .links{display:none}
+  .burger{display:grid}
+  /* SEM JS o mobile ficaria sem NENHUMA navegação (burger/drawer são JS):
+     o drawer vira menu inline sob a barra (margin-top = altura da nav fixa,
+     senão nasce coberto por ela), e o burger inerte some */
+  html.no-js .burger{display:none}
+  html.no-js .drawer{position:static; inset:auto; opacity:1; pointer-events:auto; transform:none; margin-top:84px; padding:10px var(--pad) 18px; gap:0}
+  html.no-js .drawer a{font-size:1.05rem; padding:12px 0}
+}
+
+@media(max-width:900px){.seg-grid{grid-template-columns:1fr 1fr}}
+
+/* ===== TABLET (≤860): grids de 2 colunas empilham ===== */
+@media(max-width:860px){
+  .hero{padding:116px 0 56px; align-items:center}
+  .hero-grid{grid-template-columns:1fr; gap:30px}
+  .hero-text{max-width:none; order:1}
+  .hero-media{order:2; aspect-ratio:16/11; min-height:0}
+  .fleet{grid-template-columns:1fr} .fleet-photo{min-height:240px; order:-1}
+  .company{grid-template-columns:1fr; gap:30px}
+  /* contato: coluna única com os CONTATOS antes do formulário longo (QW4).
+     grid-template-columns fica declarado (inerte sob flex) por segurança de cascata */
+  .contact-grid{display:flex; flex-direction:column; grid-template-columns:1fr; gap:34px}
+  .contact-info{order:1}
+  .form{order:2}
+  .field.row2{grid-template-columns:1fr}
+  /* alvo de toque do tel/e-mail dentro do card: 44px sem inflar o card */
+  .ci-card a.val{display:inline-flex; align-items:center; min-height:44px; margin:-10px 0}
+  .cta-float{display:flex}
+  /* Obra: corrige o corte do topo + scrim INVERTIDO (o texto fica no TOPO
+     no mobile — o gradiente denso precisa estar em cima, não embaixo) */
+  .cine{height:auto; min-height:78svh; align-items:flex-start; overflow:hidden}
+  .cine .media img{object-position:70% center}
+  .cine .wrap{padding-top:clamp(96px,15vh,140px); padding-bottom:clamp(88px,16vh,120px)}
+  .cine .media::after{background:linear-gradient(180deg,rgba(1,13,38,.9) 0%,rgba(1,13,38,.72) 45%,rgba(1,13,38,.3) 78%,rgba(1,13,38,.12) 100%)}
+  .cine h2{max-width:none; line-height:1.06}
+  .cine .lead{max-width:44ch; font-size:1.02rem; line-height:1.5}
+  .cine-spec{display:grid; grid-template-columns:1fr 1fr; gap:18px 24px; max-width:none}
+  .cine-spec li.hero-spec{padding-right:0; border-right:0}
+}
+
+@media(max-width:760px){
+  .strip .wrap{grid-template-columns:1fr 1fr}
+  .strip .item{padding:22px 18px}
+  .strip .item:nth-child(odd){border-left:0; padding-left:0}
+  .stats{grid-template-columns:1fr; gap:26px} .stat-hero .num{white-space:normal}
+  .compare{grid-template-columns:1fr}
+  .foot .top{grid-template-columns:1fr 1fr} .foot .fcol.brand{grid-column:1 / -1}
+}
+
+/* frota: a tabela vira blocos empilhados */
+@media(max-width:720px){
+  .fleet-ds thead{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);clip-path:inset(50%)}
+  .fleet-ds table,.fleet-ds caption,.fleet-ds tbody,.fleet-ds tfoot,.fleet-ds tr,.fleet-ds td{display:block;width:100%}
+  .fleet-ds caption{letter-spacing:.08em}
+  .fleet-ds tbody tr{padding:16px 20px;border-bottom:1px solid var(--line)}
+  .fleet-ds tbody td{padding:0;border:0}
+  .fleet-ds .ds-cell{margin:10px 0 2px}
+  .fleet-ds .ds-tf{font-size:1.5rem;text-align:left;min-width:0}
+  .fleet-ds .ds-bar{max-width:100%}
+  .fleet-ds .ds-app{margin-top:12px;max-width:none}
+  .fleet-ds tfoot td{padding:18px 20px}
+}
+
+@media(max-width:680px){
+  .step{grid-template-columns:64px 1fr; gap:16px} .step .ico{display:none} .step .n{font-size:1.7rem}
+  .qa .qno{min-width:34px} .qa .ans p{padding-left:4px}
+}
+
+@media(max-width:640px){
+  /* CTAs primários full-width + rótulos do SVG legíveis (encolhe ~3x).
+     36px rende ~10px em 375px; o aviso "vala aberta" some AQUI (colidiria com
+     ENTRADA/SAÍDA — as coords do SVG são p/ fonte 13px) — a vala tracejada
+     vermelha permanece no desenho e a seção Comparação repete a mensagem. */
+  .hero .btn-row .btn.big,.cine .btn-row .btn.big{width:100%; justify-content:center}
+  .sig-label{font-size:36px; letter-spacing:.04em}
+  .sig-label.warn{display:none}
+}
+
+/* =====================================================================
+   MOBILE-NATIVE (≤600) — refactor 07/2026. Sistema único: ritmo, toque
+   ≥44px, tipografia fluida e densidade por seção. Substitui o v9.
+   ===================================================================== */
+@media(max-width:600px){
+  /* 1 — RITMO/TIPO: respiro compacto + escalas fluidas (nada de piso travado) */
+  :root{--sec:clamp(30px,5.5vh,44px)}
+  .eyebrow-row{margin-bottom:14px}
+  .display{font-size:clamp(2.4rem,11.5vw,2.9rem); letter-spacing:-.022em}
+  .h2{font-size:clamp(1.45rem,6.4vw,2rem)}
+  .lead{font-size:1rem; line-height:1.55}
+  .kicker{font-size:.78rem; letter-spacing:.12em}
+  .kicker::before{width:24px}
+  /* micro-rótulos mono saem de 9.9px (ilegível) p/ ~10.9px */
+  .strip .item span,.cine-spec span,.ci-card .lab,.seg-hint{font-size:.68rem; letter-spacing:.1em}
+  .sig-head{margin-bottom:20px}
+
+  /* touch: burger 48px (WCAG 2.5.8 / Material 3); logo-link ≥44px mesmo com a nav encolhida */
+  .burger{width:48px; height:48px}
+  .nav .row > a:first-child{display:flex; align-items:center; min-height:44px}
+
+  /* 2 — HERO enxuto: mídia 2:1, trust em coluna limpa (sem pontos órfãos) */
+  .hero{min-height:0; padding:96px 0 44px}
+  .hero-media{aspect-ratio:2/1}
+  .hero .lead{margin-top:16px}
+  .hero .btn-row{margin-top:24px}
+  .hero .trust{margin-top:20px; flex-direction:column; align-items:flex-start; gap:7px}
+  .hero .trust .dot{display:none}
+
+  /* 3 — STRIP mais denso */
+  .strip .item{padding:16px 14px}
+  .strip .item b{font-size:1.7rem}
+  .strip .item b.tag{font-size:.95rem}
+
+  /* 4 — DIFERENCIAL (drill-path) */
+  .signature .sig-seal{margin-bottom:20px; gap:10px}
+  .sig-seal .chip{padding:9px 14px; font-size:.7rem}
+  .hero-textlink{padding:12px 2px; min-height:44px}
+
+  /* 5 — MÉTODO: passos densos */
+  .steps{margin-top:20px}
+  .step{grid-template-columns:36px 1fr; gap:12px; padding:13px 0}
+  .step .n{font-size:1.3rem}
+  .step .b b{font-size:1.1rem; margin-bottom:4px}
+  .step .b p{font-size:.9rem; line-height:1.45}
+
+  /* 6 — COMPARAÇÃO: "vala aberta" colapsa (JS remove [open] ≤600) */
+  .compare{margin-top:24px; gap:12px}
+  .compare .col{padding:16px}
+  .compare .col h3{font-size:1.1rem; margin-bottom:14px}
+  .compare ul{gap:9px}
+  .compare li{font-size:.95rem; line-height:1.45; gap:10px}
+  .compare li .i{width:16px; height:16px; margin-top:2px}
+  .compare details.col > summary{
+    display:flex; align-items:center; gap:10px; list-style:none; cursor:pointer;
+    font-family:var(--font-mono); font-size:.7rem; letter-spacing:.08em;
+    text-transform:uppercase; color:var(--muted); padding:13px 0; min-height:44px;
+  }
+  .compare details.col > summary::-webkit-details-marker{display:none}
+  .compare details.col > summary .cmp-x{margin-left:auto; font-size:1rem; transition:transform .3s var(--ease)}
+  .compare details.col[open] > summary .cmp-x{transform:rotate(45deg)}
+  .compare details.col > h3{margin-top:14px}
+
+  /* 7 — NÚMEROS: herói ainda gigante, coadjuvantes compactos */
+  .stat-hero{padding-bottom:16px; margin-bottom:16px}
+  .stat-hero .num{font-size:clamp(3.2rem,13vw,4.2rem)}
+  .stats{gap:14px}
+  .stat{padding-left:16px}
+  .stat .lb{margin-top:6px; font-size:.84rem}
+
+  /* 8 — CLIENTES: 3 colunas (15 logos em 5 linhas, não 8) */
+  .client-grid.logos{grid-template-columns:repeat(3,1fr); gap:8px; margin-top:20px}
+  .client-grid.logos li{min-height:56px; padding:8px 10px}
+  .client-grid.logos li img{max-height:30px}
+  .clients .ft-note{margin-top:14px}
+
+  /* 9 — SEGMENTOS: carrossel scroll-snap horizontal full-bleed (peek do próximo) */
+  .seg-grid{
+    display:flex; grid-template-columns:none; gap:12px; margin-top:20px;
+    overflow-x:auto; scroll-snap-type:x mandatory; -webkit-overflow-scrolling:touch;
+    scrollbar-width:none;
+    margin-inline:calc(var(--pad) * -1); padding:4px var(--pad) 8px;
+    scroll-padding-left:var(--pad);
+  }
+  .seg-grid::-webkit-scrollbar{display:none}
+  .seg{flex:0 0 84%; min-height:272px; scroll-snap-align:start; padding:18px}
+  .seg.reveal{opacity:1; transform:none}         /* cards sempre visíveis no carrossel */
+  .seg h3{font-size:1.3rem}
+  /* sem hover no toque: scrim mais denso + sombra garantem o contraste do texto */
+  .seg::after{background:linear-gradient(0deg,rgba(2,10,30,.92) 0%,rgba(2,10,30,.62) 52%,rgba(2,10,30,.14) 100%)}
+  .seg p{text-shadow:0 1px 8px rgba(2,10,30,.5)}
+  .seg .go{opacity:1; min-height:44px; align-items:center; margin-top:8px}
+  .seg-rail{display:flex; align-items:center; gap:14px; margin-top:14px}
+  .seg-hint{font-family:var(--font-mono); letter-spacing:.1em;
+    text-transform:uppercase; color:var(--faint); white-space:nowrap}
+  .seg-prog{flex:1; height:2px; background:var(--line); position:relative; overflow:hidden}
+  .seg-prog i{position:absolute; inset:0 auto 0 0; width:100%; background:var(--sky);
+    transform:scaleX(.16); transform-origin:left; transition:transform .15s var(--ease)}
+
+  /* 10 — OBRA: título fluido + paddings mais curtos */
+  .cine .wrap{padding-top:clamp(88px,13vh,116px); padding-bottom:clamp(64px,10vh,92px)}
+  .cine .h2{font-size:clamp(1.3rem,5.6vw,1.55rem)}
+
+  /* 11 — FROTA: linha vira grid [máquina | tf+barra] + classe de aplicação
+     numa 2ª linha compacta (só a prosa longa .ds-desc sai). ~72px/linha
+     em vez de ~105px, sem perder a classe de nenhuma máquina. */
+  .fleet-ds tbody tr{display:grid; grid-template-columns:1fr auto; align-items:center; column-gap:12px; padding:9px 14px}
+  .fleet-ds .ds-eq{font-size:.98rem}
+  .fleet-ds .ds-eq small{font-size:.64rem; margin-top:2px}
+  .fleet-ds .ds-cell{margin:0; gap:8px; flex-direction:row-reverse}
+  .fleet-ds .ds-tf{font-size:1.05rem; text-align:right}
+  .fleet-ds .ds-tf span{font-size:.6rem}
+  .fleet-ds .ds-bar{width:72px; max-width:72px; height:4px}
+  .fleet-ds .ds-app{display:block; grid-column:1 / -1; margin:3px 0 0; font-size:.8rem; line-height:1.35; max-width:none}
+  .fleet-ds .ds-app .ds-desc{display:none}
+  .fleet-ds caption{padding:12px 14px}
+  .fleet-ds tfoot td{padding:12px 14px}
+  .fleet-ds tfoot .ds-env{gap:6px 18px; font-size:.72rem}
+  .fleet{margin-top:24px}
+  .fleet-cta{margin-top:24px}
+  .fleet .fleet-band{margin-bottom:14px}
+  .fleet .lead{font-size:.94rem; margin-top:14px}
+  .fleet-photo{display:none}                    /* foto do operador é secundária no mobile */
+  .fleet-row .m{padding:9px 12px 9px 0; margin-right:12px; font-size:.88rem}
+  .ft-note{font-size:.74rem; margin-top:12px}
+
+  /* 12 — EMPRESA */
+  .company{margin-top:4px; gap:24px}
+  .certs{gap:10px}
+  .cert{min-width:0; flex:1 1 46%; padding:12px 14px}
+
+  /* 13 — FAQ denso (summary segue alvo ≥44px) */
+  .faq{margin-top:22px}
+  .qa summary{padding:13px 4px; gap:10px; font-size:1rem; line-height:1.35}
+  .qa .qno{min-width:34px}
+  .qa .ic{width:26px; height:26px}
+  .qa .ans p{font-size:.95rem; padding:0 4px 16px 4px}
+
+  /* 14 — CTA intermediário + flutuante mais discreto */
+  .midcta .wrap{gap:18px}
+  .cta-float a{padding:13px 18px; font-size:.95rem}
+
+  /* 15 — CONTATO: pares curtos lado a lado, mapa menor, form denso */
+  .contact-grid{margin-top:22px; gap:22px}
+  .form{gap:12px}
+  .field{gap:5px}
+  .field.row2{display:grid; grid-template-columns:1fr 1fr; gap:10px}
+  .field input,.field select,.field textarea{padding:12px 14px}
+  .field textarea{min-height:84px}
+  .ci-card{padding:14px 16px}
+  .ci-map iframe{height:120px}
+
+  /* 16 — RODAPÉ: links com alvo 44px + folgas compactas + espaço p/ o CTA flutuante */
+  .foot{padding:38px 0 92px}
+  .foot .top{grid-template-columns:1fr 1fr; gap:20px}   /* nav | contato lado a lado */
+  .foot .fcol.brand{grid-column:1 / -1}
+  .foot .logo{height:32px; margin-bottom:12px}
+  .foot .fcol h4{margin-bottom:8px; font-size:.68rem}
+  .foot .fcol a{padding:10px 0; min-height:44px; display:flex; align-items:center; font-size:.9rem}
+  .foot .fcol p{padding:3px 0; font-size:.88rem}
+  .foot .fcerts{margin-top:14px}
+  .foot .fcerts .seal-tile{width:46px; height:46px}
+  .foot .fcerts .abratt-tile{font-size:.68rem}
+  .foot .cr{margin-top:20px; padding-top:14px}
+}
+
+/* telas muito estreitas (dobráveis): rodapé em 1 coluna —
+   PRECISA vir depois do bloco ≤600 (senão a cascata o mata) */
+@media(max-width:460px){.foot .top{grid-template-columns:1fr}}
+
+/* ===== preferências (independem de largura) ===== */
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{animation:none !important; transition-duration:.01ms !important}
+  .reveal{opacity:1 !important; transform:none !important}
+  .lines .ln > span{transform:none !important}
+  .fleet-ds .ds-bar i{transform:none !important}
+  body{cursor:auto}
+  .cursor,.cursor-dot{display:none}
+  .seg .bg img{transform:none !important}
+}
+@media(hover:none){
+  .cursor,.cursor-dot{display:none}
+  .qa summary,.btn,.field input,.field select,.field textarea{cursor:auto}
+}
