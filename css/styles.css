@@ -66,11 +66,11 @@ h1,h2,h3{font-family:var(--font-display); font-weight:700; line-height:1.02; let
 .h2{font-size:clamp(1.8rem,3.8vw,3.2rem); font-weight:700}
 
 /* KICKERS / rótulos — IBM Plex Mono, a voz de datasheet do sistema */
-.kicker{font-family:var(--font-mono); font-size:.72rem; letter-spacing:.16em;
-  text-transform:uppercase; color:var(--sky); font-weight:500;
-  display:inline-flex; align-items:center; gap:14px}
+.kicker{font-family:var(--font-body); font-size:.74rem; letter-spacing:.14em;
+  text-transform:uppercase; color:var(--sky); font-weight:600;
+  display:inline-flex; align-items:center; gap:12px}
 .kicker::before{content:""; width:32px; height:1px; background:var(--sky); opacity:.8; order:-1}
-.kicker[data-i]::after{content:attr(data-i); order:-2; color:var(--faint); font-weight:400; letter-spacing:.08em}
+.kicker[data-i]::after{content:none}
 
 .wrap{max-width:var(--maxw); margin:0 auto; padding-left:var(--pad); padding-right:var(--pad)}
 .lead{font-size:clamp(1.05rem,1.4vw,1.28rem); color:var(--muted); max-width:56ch; line-height:1.62}
@@ -783,4 +783,9 @@ html.no-js .seg-prog{display:none}
 @media(hover:none){
   .cursor,.cursor-dot{display:none}
   .qa summary,.btn,.field input,.field select,.field textarea{cursor:auto}
+}
+
+/* ===== despoluição mobile (pedido 23/07) ===== */
+@media (max-width:600px){
+  #metodo.signature{display:none}
 }
