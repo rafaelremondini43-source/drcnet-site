@@ -527,7 +527,7 @@ html.cursor-custom .qa summary{cursor:none}
 
 /* defaults desktop de elementos que SÓ existem no mobile */
 /* comparação: o summary do acordeão só existe no mobile (desktop = [open], summary oculto) */
-.compare details.col > summary{display:none}
+.compare details.col > summary,.fleet-fold > summary{display:none}
 /* rail/hint do carrossel de segmentos: só no mobile */
 .seg-rail{display:none}
 /* sem JS a barra de progresso do carrossel congelaria em 16% (mentira) — some */
@@ -651,12 +651,21 @@ html.no-js .seg-prog{display:none}
   .burger{width:48px; height:48px}
   .nav .row > a:first-child{display:flex; align-items:center; min-height:44px}
 
-  /* 2 — HERO enxuto: poster de fundo, trust em coluna limpa (sem pontos órfãos) */
-  .hero{min-height:0; padding:112px 0 52px}
+  /* 2 — HERO enxuto: poster de fundo, 1 CTA forte (Hick — o secundário vira
+     link de texto), kicker em 1 linha, trust em linha corrida compacta */
+  .hero{min-height:0; padding:112px 0 48px}
+  .hero .kicker{font-size:.72rem; letter-spacing:.1em}
   .hero .lead{margin-top:16px}
-  .hero .btn-row{margin-top:24px}
-  .hero .trust{margin-top:20px; flex-direction:column; align-items:flex-start; gap:7px}
+  .hero .btn-row{margin-top:24px; flex-direction:column; align-items:stretch; gap:4px}
+  .hero .btn-row .btn.ghost{width:auto; align-self:center; border:0; background:none; box-shadow:none;
+    padding:11px 8px; min-height:44px; font-size:.98rem;
+    text-decoration:underline; text-underline-offset:4px; text-decoration-color:rgba(255,255,255,.45)}
+  .hero .trust{margin-top:18px; flex-direction:row; flex-wrap:wrap; align-items:center; gap:8px 16px; font-size:.64rem}
   .hero .trust .dot{display:none}
+
+  /* 2b — FAIXA PÓS-HERO: o telefone é o elemento forte (leads por ligação
+     convertem 25–40% vs ~2% de formulário — estudo mobile 07/2026) */
+  .contact-band a[href^="tel"]{font-size:1.18rem; border-bottom-width:2px}
 
   /* 3 — STRIP mais denso */
   .strip .item{padding:16px 14px}
@@ -699,11 +708,12 @@ html.no-js .seg-prog{display:none}
   .stat{padding-left:16px}
   .stat .lb{margin-top:6px; font-size:.84rem}
 
-  /* 8 — CLIENTES: 3 colunas (15 logos em 5 linhas, não 8) */
-  .client-grid.logos{grid-template-columns:repeat(3,1fr); gap:8px; margin-top:20px}
-  .client-grid.logos li{min-height:56px; padding:8px 10px}
-  .client-grid.logos li img{max-height:30px}
-  .clients .ft-note{margin-top:14px}
+  /* 8 — CLIENTES: 3 colunas, tiles densos (menos borda por pixel — clutter
+     é custo de busca visual, Rosenholtz r=.83) */
+  .client-grid.logos{grid-template-columns:repeat(3,1fr); gap:6px; margin-top:18px}
+  .client-grid.logos li{min-height:46px; padding:6px 8px}
+  .client-grid.logos li img{max-height:26px}
+  .clients .ft-note{margin-top:12px}
 
   /* 9 — SEGMENTOS: carrossel scroll-snap horizontal full-bleed (peek do próximo) */
   .seg-grid{
@@ -752,17 +762,31 @@ html.no-js .seg-prog{display:none}
   .fleet .fleet-band{margin-bottom:14px}
   .fleet .lead{font-size:.94rem; margin-top:14px}
   .fleet-photo{display:none}                    /* foto do operador é secundária no mobile */
-  .fleet-row .m{padding:9px 12px 9px 0; margin-right:12px; font-size:.88rem}
+  /* equipamentos de apoio = info secundária: colapsa em acordeão (audiência
+     qualificada das telas profundas abre se quiser); itens sem sublinhado */
+  .fleet-fold > summary{display:flex; align-items:center; gap:10px; list-style:none; cursor:pointer;
+    font-family:var(--font-mono); font-size:.7rem; letter-spacing:.08em; text-transform:uppercase;
+    color:var(--muted); padding:12px 0; min-height:44px}
+  .fleet-fold > summary::-webkit-details-marker{display:none}
+  .fleet-fold > summary .cmp-x{margin-left:auto; font-size:1rem; transition:transform .3s var(--ease)}
+  .fleet-fold[open] > summary .cmp-x{transform:rotate(45deg)}
+  .fleet-fold .bl{display:none}
+  .fleet-fold .fleet-row{padding-bottom:6px}
+  .fleet-row .m{padding:6px 12px 6px 0; margin-right:10px; font-size:.88rem; border-bottom:0}
   .ft-note{font-size:.74rem; margin-top:12px}
 
-  /* 12 — EMPRESA */
-  .company{margin-top:4px; gap:24px}
-  .certs{gap:10px}
-  .cert{min-width:0; flex:1 1 46%; padding:12px 14px}
+  /* 12 — EMPRESA: prosa mais densa (ninguém lê >28% — layer-cake) e
+     cartões ISO compactos (maior densidade de bordas da página no baseline) */
+  .company{margin-top:4px; gap:22px}
+  .company .lead,.company p{font-size:.95rem; line-height:1.52}
+  .certs{gap:8px}
+  .cert{min-width:0; flex:1 1 46%; padding:10px 12px; gap:10px}
+  .cert b{font-size:1rem}
+  .cert .seal-tile{width:40px; height:40px}
 
   /* 13 — FAQ denso (summary segue alvo ≥44px) */
-  .faq{margin-top:22px}
-  .qa summary{padding:13px 4px; gap:10px; font-size:1rem; line-height:1.35}
+  .faq{margin-top:20px}
+  .qa summary{padding:11px 4px; gap:10px; font-size:1rem; line-height:1.35}
   .qa .qno{min-width:34px}
   .qa .ic{width:26px; height:26px}
   .qa .ans p{font-size:.95rem; padding:0 4px 16px 4px}
@@ -772,32 +796,35 @@ html.no-js .seg-prog{display:none}
   .cta-float a{padding:13px 18px; font-size:.95rem}
 
   /* 15 — CONTATO: pares curtos lado a lado, mapa menor, form denso */
-  .contact-grid{margin-top:22px; gap:22px}
-  .form{gap:12px}
-  .field{gap:5px}
+  .contact-grid{margin-top:20px; gap:18px}
+  .form{gap:10px}
+  .field{gap:4px}
   .field.row2{display:grid; grid-template-columns:1fr 1fr; gap:10px}
-  .field input,.field select,.field textarea{padding:12px 14px}
-  .field textarea{min-height:84px}
-  .ci-card{padding:14px 16px}
-  .ci-map iframe{height:120px}
+  .field input,.field select,.field textarea{padding:11px 13px}
+  .field textarea{min-height:76px}
+  .ci-card{padding:13px 15px}
+  .ci-map iframe{height:110px}
 
-  /* 16 — RODAPÉ: links com alvo 44px + folgas compactas + espaço p/ o CTA flutuante */
-  .foot{padding:38px 0 92px}
-  .foot .top{grid-template-columns:1fr 1fr; gap:20px}   /* nav | contato lado a lado */
+  /* 16 — RODAPÉ: links com alvo 44px + folgas compactas + espaço p/ o CTA flutuante.
+     Rodapé consumia ~1,2 tela no baseline (telas 5+ recebem ~10% da atenção somadas) */
+  .foot{padding:30px 0 88px}
+  .foot .top{grid-template-columns:1fr 1fr; gap:16px}   /* nav | contato lado a lado */
   .foot .fcol.brand{grid-column:1 / -1}
-  .foot .logo{height:32px; margin-bottom:12px}
-  .foot .fcol h4{margin-bottom:8px; font-size:.68rem}
-  .foot .fcol a{padding:10px 0; min-height:44px; display:flex; align-items:center; font-size:.9rem}
-  .foot .fcol p{padding:3px 0; font-size:.88rem}
-  .foot .fcerts{margin-top:14px}
-  .foot .fcerts .seal-tile{width:46px; height:46px}
-  .foot .fcerts .abratt-tile{font-size:.68rem}
-  .foot .cr{margin-top:20px; padding-top:14px}
+  .foot .logo{height:32px; margin-bottom:10px}
+  .foot .fcol h4{margin-bottom:6px; font-size:.68rem}
+  .foot .fcol a{padding:7px 0; min-height:44px; display:flex; align-items:center; font-size:.88rem}
+  .foot .fcol p{padding:2px 0; font-size:.85rem}
+  .foot .fcerts{margin-top:12px}
+  .foot .fcerts .seal-tile{width:42px; height:42px}
+  .foot .fcerts .abratt-tile{font-size:.66rem}
+  .foot .cr{margin-top:16px; padding-top:12px}
 }
 
 /* telas muito estreitas (dobráveis): rodapé em 1 coluna —
-   PRECISA vir depois do bloco ≤600 (senão a cascata o mata) */
-@media(max-width:460px){.foot .top{grid-template-columns:1fr}}
+   PRECISA vir depois do bloco ≤600 (senão a cascata o mata).
+   07/2026: limiar 460→360 — em 375-460px as 2 colunas cabem e poupam ~350px
+   de rolagem num rodapé que consumia 1,2 tela */
+@media(max-width:360px){.foot .top{grid-template-columns:1fr}}
 
 /* ===== preferências (independem de largura) ===== */
 @media (prefers-reduced-motion: reduce){
