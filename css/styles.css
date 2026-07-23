@@ -1,6 +1,6 @@
 /* ===========================================================================
    DRC — Perfuração Direcional / Método Não Destrutivo · Landing v6 (UX pro)
-   Roboto Condensed (display) + Inter (corpo) + IBM Plex Mono (voz técnica)
+   Roboto Condensed (display) + Inter (corpo e rótulos técnicos; mono banida)
    Navy industrial · cantos retos · abertura ESCURA (hero+strip navy-ink),
    corpo claro datasheet, fechamento navy · vermelho = SÓ conversão
    Refs: Active Theory (escala/disciplina), igloo.inc (mono HUD),
@@ -31,7 +31,10 @@
 
   --font-display:'Roboto Condensed',Arial Narrow,system-ui,sans-serif;
   --font-body:'Inter',system-ui,-apple-system,sans-serif;
-  --font-mono:'IBM Plex Mono',ui-monospace,'Cascadia Mono',Consolas,monospace;
+  /* sem fonte mono no site (gosto do dono: "fonte de IA") — os rótulos técnicos
+     usam a MESMA família do corpo, clássica e confiável; o alias --font-mono
+     fica p/ não tocar nos ~30 pontos de uso */
+  --font-mono:'Inter',Helvetica,Arial,system-ui,sans-serif;
 
   --maxw:1320px; --pad:clamp(20px,4vw,72px);
   --sec:clamp(72px,10vh,132px);
@@ -65,7 +68,7 @@ h1,h2,h3{font-family:var(--font-display); font-weight:700; line-height:1.02; let
 .display{font-size:clamp(2.3rem,4.8vw,4.2rem); font-weight:700; letter-spacing:-.015em; line-height:1.02}
 .h2{font-size:clamp(1.55rem,2.9vw,2.4rem); font-weight:700}
 
-/* KICKERS / rótulos — IBM Plex Mono, a voz de datasheet do sistema */
+/* KICKERS / rótulos */
 .kicker{font-family:var(--font-body); font-size:.74rem; letter-spacing:.14em;
   text-transform:uppercase; color:var(--sky); font-weight:600;
   display:inline-flex; align-items:center; gap:12px}
