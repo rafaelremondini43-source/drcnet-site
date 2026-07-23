@@ -332,7 +332,7 @@ body.menu-open{overflow:hidden}   /* trava o scroll do fundo enquanto o menu mod
 /* FROTA */
 .fleet{display:grid; grid-template-columns:1.15fr .85fr; gap:clamp(30px,5vw,72px); align-items:center; margin-top:48px}
 .fleet-photo{position:relative; overflow:hidden; border-radius:var(--r-l); align-self:stretch; min-height:340px}
-.fleet-photo img{position:absolute; inset:0; width:100%; height:100%; object-fit:cover; filter:contrast(1.04)}
+.fleet-photo img,.fleet-photo video{position:absolute; inset:0; width:100%; height:100%; object-fit:cover; filter:contrast(1.04)}
 .fleet-photo::after{content:""; position:absolute; inset:0; border:1px solid var(--line); background:linear-gradient(0deg,rgba(2,10,30,.45),transparent 50%)}
 .fleet-band{margin-bottom:26px}
 .fleet-band .bl{font-family:var(--font-mono); font-size:.66rem; letter-spacing:.18em; text-transform:uppercase; color:var(--faint); padding-bottom:10px; border-bottom:1px solid var(--line); margin-bottom:6px}

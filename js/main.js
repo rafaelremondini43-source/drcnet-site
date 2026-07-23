@@ -406,6 +406,21 @@
     });
   })();
 
+  // ---- FROTA: vídeo real de obra — só baixa/toca quando a seção aparece ----
+  (function fleetVideo() {
+    var v = document.querySelector('.fleet-vid'); if (!v || !('IntersectionObserver' in window)) return;
+    if (saveData || matchMedia('(prefers-reduced-motion: reduce)').matches) return;  // fica o poster
+    var io = new IntersectionObserver(function (es) {
+      es.forEach(function (e) {
+        if (!e.isIntersecting) return;
+        try { v.load(); } catch (er) {}
+        var p = v.play(); if (p && p.catch) p.catch(function () {});
+        io.disconnect();
+      });
+    }, { rootMargin: '200px' });
+    io.observe(v);
+  })();
+
   // ---- ano dinâmico ----
   var y = document.getElementById('year'); if (y) y.textContent = (new Date()).getFullYear();
 })();
