@@ -364,6 +364,17 @@
     }
   })();
 
+  // ---- FAQ: abrir uma pergunta fecha a anterior (accordion exclusivo) ----
+  (function faqExclusive() {
+    var qas = [].slice.call(document.querySelectorAll('.faq details.qa'));
+    qas.forEach(function (d) {
+      d.addEventListener('toggle', function () {
+        if (!d.open) return;
+        qas.forEach(function (o) { if (o !== d && o.open) o.open = false; });
+      });
+    });
+  })();
+
   // ---- ano dinâmico ----
   var y = document.getElementById('year'); if (y) y.textContent = (new Date()).getFullYear();
 })();
