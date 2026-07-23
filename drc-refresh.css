@@ -20,12 +20,19 @@
 /* ---------- tipografia de leitura ---------- */
 body { -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }
 .the_content_wrapper p,
-.widget_text .textwidget,
+#Content .widget_text .textwidget,
 #Content .column_column p {
   font-size: 16px;
   line-height: 1.75;
   color: var(--drc-ink);
 }
+/* rodapé é navy: textos SEMPRE claros (nunca herdar o ink escuro) */
+#Footer, #Footer p, #Footer .textwidget, #Footer .widget_text,
+#Footer li, #Footer dd, #Footer address {
+  color: rgba(255, 255, 255, .88);
+}
+#Footer .widget > h4, #Footer a { color: #fff; }
+#Footer label, #Footer .gfield_label { color: rgba(255, 255, 255, .92) !important; }
 #Content h1, #Content h2, #Content h3 {
   color: var(--drc-navy);
   font-style: normal;
@@ -241,9 +248,7 @@ ul.portfolio_group li.portfolio-item .details-wrapper { display: none !important
   ul.portfolio_group { grid-template-columns: 1fr 1fr; gap: 12px; }
   ul.portfolio_group li.portfolio-item .image_wrapper img { height: 140px !important; }
 }
-@media only screen and (max-width: 480px) {
-  ul.portfolio_group { grid-template-columns: 1fr; }
-}
+/* (2 colunas mantidas até 390px — regra no bloco mobile geral) */
 
 /* grade de "galeria com legenda" da página Perfuração (imagens soltas em colunas) */
 .image_frame { border: 0 !important; }
@@ -273,12 +278,19 @@ ul.portfolio_group li.portfolio-item .details-wrapper { display: none !important
   margin-bottom: 10px;
 }
 
-/* selos ISO do rodapé em tiles */
+/* selos ISO do rodapé em tiles — contidos na própria coluna */
 #Footer img[src*="ISO"], #Footer img[src*="Selo"], #Footer img[src*="SGS"], #Footer img[src*="ABNT"] {
   background: #fff;
   border-radius: 8px;
   padding: 6px;
+  max-width: 30%;
+  height: auto;
+  vertical-align: middle;
 }
+
+/* ---------- slider da home ---------- */
+/* ilustração datada (caixa azul com árvores) sai; fica a foto real + texto */
+rs-module img[src*="box-slider"] { display: none !important; }
 
 /* ---------- barra de navegação ---------- */
 #Top_bar .menu > li > a span:not(.description) { font-size: 14.5px; letter-spacing: .2px; }
@@ -293,6 +305,164 @@ ul.portfolio_group li.portfolio-item .details-wrapper { display: none !important
   font-size: 14px !important;
 }
 
+/* ============================================================
+   AUDITORIA v5 — correções das 4 revisões independentes
+   ============================================================ */
+
+/* medida de leitura: nunca mais linha de 150 caracteres; coluna centrada */
+.the_content_wrapper p,
+#Content .column_column p { max-width: 72ch; }
+.the_content_wrapper > p,
+#Content .column_column .column_attr > p { margin-left: auto; margin-right: auto; }
+#Content a.button.btn-orcamento { display: table; margin: 14px auto 0; }
+/* localização: o mapa ocupa a largura toda */
+.page-id-148 #Content .column { width: 100% !important; margin-right: 0 !important; }
+#Content p { font-size: 16px; line-height: 1.75; }
+#Content h1, #Content h2, #Content h3 { line-height: 1.3; }
+#Content .the_content_wrapper h2,
+#Content .the_content_wrapper h3 {
+  font-family: "Roboto Condensed", "Oswald", sans-serif;
+  font-weight: 700;
+  font-size: 26px;
+  margin-top: 34px;
+}
+
+/* subheader: título respira, breadcrumb redundante sai */
+#Subheader .title { line-height: 1.22 !important; }
+#Subheader ul.breadcrumbs { display: none !important; }
+
+/* rodapé: botão Enviar invertido (royal sobre royal sumia), menus sem caixas */
+#Footer input[type="submit"] { background: #fff !important; color: var(--drc-royal) !important; }
+#Footer input[type="submit"]:hover { background: var(--drc-bg-soft) !important; }
+#Footer .widget input[type="text"] { width: 100%; max-width: 260px; }
+#Footer .widget ul li,
+#Footer .widget ul li a { background: none !important; border-left: 0 !important; border-right: 0 !important; border-top: 0 !important; box-shadow: none !important; }
+#Footer .widget ul li { border-bottom: 1px solid rgba(255,255,255,.10) !important; }
+#Footer .widget ul li a { display: block; padding: 9px 0 !important; font-size: 14.5px; opacity: .92; }
+
+/* slider da home: ilustração antiga fora (fallback global) + véu p/ o texto branco */
+img[src*="box-slider"] { display: none !important; }
+rs-module { position: relative; }
+rs-module::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  pointer-events: none;
+  background: linear-gradient(100deg,
+    rgba(12, 26, 54, .68) 0%,
+    rgba(12, 26, 54, .38) 45%,
+    rgba(12, 26, 54, .08) 78%,
+    rgba(12, 26, 54, 0) 100%);
+}
+
+/* uploads: dropzone do Canal e input de arquivo do Trabalhe Conosco */
+.gform_wrapper .gform_drop_area {
+  border: 2px dashed var(--drc-line) !important;
+  border-radius: var(--drc-r) !important;
+  background: var(--drc-bg-soft) !important;
+  padding: 26px 16px !important;
+  text-align: center;
+}
+.gform_wrapper .gform_drop_instructions {
+  display: block !important;
+  margin: 0 0 12px !important;
+  color: var(--drc-ink);
+  font-size: 14px;
+}
+.gform_wrapper button.gform_button_select_files {
+  background: var(--drc-royal) !important;
+  color: #fff !important;
+  border: 0 !important;
+  border-radius: 999px !important;
+  padding: 11px 24px !important;
+  font-weight: 600;
+  box-shadow: var(--drc-shadow);
+}
+.gform_wrapper input[type="file"] {
+  width: 100%;
+  padding: 12px;
+  border: 1px dashed var(--drc-line);
+  border-radius: var(--drc-r);
+  background: var(--drc-bg-soft);
+  color: var(--drc-ink);
+  font-size: 14px;
+}
+.gform_wrapper input[type="file"]::file-selector-button {
+  background: var(--drc-royal);
+  color: #fff;
+  border: 0;
+  border-radius: 999px;
+  padding: 9px 20px;
+  margin-right: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* obras-e-projetos: filtro isotope morto sai; resumo do card SEMPRE visível */
+.section-filters { display: none !important; }
+ul.portfolio_group li.portfolio-item .desc .desc-wrapper {
+  display: -webkit-box !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  position: static !important;
+  height: auto !important;
+}
+ul.portfolio_group li.portfolio-item { border-radius: var(--drc-r); }
+
+/* localização: mapa vira card */
+.page-id-148 #Content iframe {
+  display: block;
+  width: 100%;
+  height: 480px;
+  border: 0;
+  border-radius: var(--drc-r);
+  box-shadow: var(--drc-shadow);
+}
+
+/* tecnologia: screenshot do software ganha moldura */
+.page-id-100 #Content .image_frame img {
+  border-radius: var(--drc-r);
+  border: 1px solid var(--drc-line);
+  box-shadow: var(--drc-shadow);
+  background: #fff;
+  padding: 6px;
+}
+
+/* política de saúde: h2 repetia o título do subheader */
+.page-id-468 .the_content_wrapper h2:first-of-type { display: none; }
+
+/* escopo: a frase-escopo vira destaque central */
+.page-id-423 #Content .the_content_wrapper p:first-of-type {
+  max-width: 640px;
+  margin: 20px auto 8px;
+  font-size: 20px;
+  line-height: 1.6;
+  color: var(--drc-navy);
+  font-weight: 500;
+}
+
+/* perfuratriz: 4 fotos empilhadas viram grade 2×2 na coluna */
+@media only screen and (min-width: 960px) {
+  .page-id-98 .column.one-third.column_column .column_attr {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+  }
+  .page-id-98 .column.one-third.column_column .image_frame { margin: 0 !important; }
+}
+
+/* DRC Ambiental: tiras de foto em coluna única viram mosaico */
+@media only screen and (min-width: 768px) {
+  .page-id-104 #Content .image_frame {
+    width: 32%;
+    display: inline-block;
+    vertical-align: top;
+    margin: 0 .5% 12px !important;
+  }
+  .page-id-104 #Content .image_frame img { height: 190px; object-fit: cover; width: 100%; }
+}
+
 /* ---------- mobile ---------- */
 @media only screen and (max-width: 767px) {
   #Subheader { padding: 34px 0 28px !important; }
@@ -302,4 +472,21 @@ ul.portfolio_group li.portfolio-item .details-wrapper { display: none !important
   .the_content_wrapper p, #Content .column_column p { font-size: 15.5px; }
   a.button.btn-orcamento { display: block; text-align: center; }
   #Footer .widgets_wrapper { padding: 34px 0 20px; }
+  /* selos ISO nunca estouram a viewport */
+  #Footer img[src*="ISO"], #Footer img[src*="Selo"],
+  #Footer img[src*="SGS"], #Footer img[src*="ABNT"] {
+    max-width: 28%;
+    height: auto;
+  }
+  /* texto justificado abre rios em coluna estreita */
+  #Content .the_content_wrapper p, #Content .column_column p, #Content p { text-align: left !important; }
+  /* links do rodapé com alvo de toque decente */
+  #Footer .widget ul li a { padding: 10px 0 !important; }
+  /* slider não vira tira de 130px */
+  rs-module-wrap, rs-module { min-height: 250px !important; }
+  /* cards de obras: 2 colunas compactas até o fim */
+  ul.portfolio_group { grid-template-columns: 1fr 1fr !important; gap: 10px; }
+  ul.portfolio_group li.portfolio-item .desc { padding: 10px 12px 12px !important; }
+  ul.portfolio_group li.portfolio-item .desc .entry-title { font-size: 14px !important; }
+  .page-id-148 #Content iframe { height: 380px; }
 }
