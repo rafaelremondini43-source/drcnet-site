@@ -339,7 +339,9 @@ body.menu-open{overflow:hidden}   /* trava o scroll do fundo enquanto o menu mod
 .fleet-photo .fp-cap b{font-family:var(--font-mono); font-weight:600; font-size:.64rem; letter-spacing:.14em;
   text-transform:uppercase; color:var(--sky-soft); white-space:nowrap}
 .fleet-photo img,.fleet-photo video{position:absolute; inset:0; width:100%; height:100%; object-fit:cover; filter:contrast(1.04)}
-.fleet-photo::after{content:""; position:absolute; inset:0; border:1px solid var(--line); background:linear-gradient(0deg,rgba(2,10,30,.45),transparent 50%)}
+/* véu denso só no rodapé do cartão: garante contraste da legenda sem lavar a foto */
+.fleet-photo::after{content:""; position:absolute; inset:0; border:1px solid var(--line); pointer-events:none;
+  background:linear-gradient(0deg,rgba(2,10,30,.82) 0%,rgba(2,10,30,.45) 22%,transparent 46%)}
 .fleet-band{margin-bottom:26px}
 .fleet-band .bl{font-family:var(--font-mono); font-size:.66rem; letter-spacing:.18em; text-transform:uppercase; color:var(--faint); padding-bottom:10px; border-bottom:1px solid var(--line); margin-bottom:6px}
 .fleet-row{display:flex; flex-wrap:wrap; gap:0}
