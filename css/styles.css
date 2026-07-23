@@ -473,12 +473,17 @@ a.ci-card:hover{border-color:var(--navy); background:#fff; box-shadow:var(--e2)}
 html.cursor-custom .qa summary{cursor:none}
 .qa summary::-webkit-details-marker{display:none}
 .qa .qno{flex:0 0 auto; font-family:var(--font-mono); font-weight:500; font-size:.72rem; letter-spacing:.08em; color:var(--navy); min-width:44px; font-variant-numeric:tabular-nums}
-.qa .ic{flex:0 0 auto; margin-left:auto; width:32px; height:32px; border:1px solid var(--line); border-radius:var(--r-full); display:grid; place-items:center; color:var(--navy); transition:.35s var(--ease); font-family:var(--font-mono)}
-.qa[open] .ic{transform:rotate(45deg); background:var(--navy); color:#fff; border-color:var(--navy)}
-.qa .ans{display:grid; grid-template-rows:0fr; transition:grid-template-rows .4s var(--ease)}
+/* seta discreta que gira 180° ao abrir (substituiu o "+"→"×" em círculo navy) */
+.qa .ic{flex:0 0 auto; margin-left:auto; width:20px; height:20px; color:var(--faint);
+  transition:transform .42s var(--ease), color .25s ease}
+.qa summary:hover .ic{color:var(--navy)}
+.qa[open] .ic{transform:rotate(180deg); color:var(--navy)}
+.qa .ans{display:grid; grid-template-rows:0fr; transition:grid-template-rows .45s var(--ease)}
 .qa[open] .ans{grid-template-rows:1fr}
 .qa .ans>div{overflow:hidden}
-.qa .ans p{color:var(--muted); font-size:1.04rem; padding:0 4px 26px 64px; max-width:82ch}
+.qa .ans p{color:var(--muted); font-size:1.04rem; padding:0 4px 26px 64px; max-width:82ch;
+  opacity:0; transform:translateY(-6px); transition:opacity .3s var(--ease), transform .3s var(--ease)}
+.qa[open] .ans p{opacity:1; transform:none; transition-duration:.42s; transition-delay:.06s}
 
 /* CTA na seção drill-path (zona quente sem conversão) */
 .sig-cta{margin-top:32px}
@@ -788,7 +793,7 @@ html.no-js .seg-prog{display:none}
   .faq{margin-top:20px}
   .qa summary{padding:11px 4px; gap:10px; font-size:1rem; line-height:1.35}
   .qa .qno{min-width:34px}
-  .qa .ic{width:26px; height:26px}
+  .qa .ic{width:18px; height:18px}
   .qa .ans p{font-size:.95rem; padding:0 4px 16px 4px}
 
   /* 14 — CTA intermediário + flutuante mais discreto */
