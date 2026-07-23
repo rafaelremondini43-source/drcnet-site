@@ -204,7 +204,12 @@ body.menu-open{overflow:hidden}   /* trava o scroll do fundo enquanto o menu mod
   background:linear-gradient(90deg,rgba(1,13,38,.86) 0%,rgba(1,13,38,.62) 44%,rgba(1,13,38,.28) 72%,rgba(1,13,38,.14) 100%),
              linear-gradient(0deg,rgba(1,13,38,.65) 0%,transparent 34%)}
 .hero .wrap{position:relative; z-index:2; width:100%}
-.hero-text{max-width:640px}
+/* linha vertical guia: agrupa o bloco de texto numa unidade sobre o vídeo
+   (Palmer/Rock — conectividade uniforme) e conduz o olho ao CTA (boa
+   continuação; eye-tracking de leading lines 2024) */
+.hero-text{max-width:640px; position:relative; padding-left:28px}
+.hero-text::before{content:""; position:absolute; left:0; top:10px; bottom:10px; width:1px;
+  background:linear-gradient(180deg, rgba(255,255,255,.55) 0%, rgba(255,255,255,.28) 60%, rgba(255,255,255,.05) 100%)}
 .hero h1{color:#fff; max-width:18ch; text-wrap:balance; text-shadow:0 2px 24px rgba(1,13,38,.45)}
 .hero h1 .g{color:var(--sky-soft)}
 .hero .lead{margin-top:20px; max-width:50ch; color:rgba(242,246,255,.88)}
@@ -261,7 +266,9 @@ body.menu-open{overflow:hidden}   /* trava o scroll do fundo enquanto o menu mod
 .sig-seal .chip svg{width:16px; height:16px; color:var(--sky)}
 
 /* MÉTODO (4 passos) */
-.steps{margin-top:56px; border-top:1px solid var(--line)}
+.steps{margin-top:56px; border-top:1px solid var(--line); position:relative}
+/* régua vertical costurando os 4 passos (boa continuação — o olho desce pela linha) */
+.steps::before{content:""; position:absolute; left:111px; top:0; bottom:0; width:1px; background:var(--line)}
 .step{display:grid; grid-template-columns:96px 1fr auto; gap:30px; padding:38px 0; border-bottom:1px solid var(--line); align-items:center; transition:background .4s}
 .step:hover{background:linear-gradient(90deg,rgba(1,43,129,.04),transparent)}
 .step .n{font-family:var(--font-mono); font-weight:500; font-size:1.8rem; color:var(--sky); transition:color .4s,transform .4s var(--ease)}
@@ -512,17 +519,17 @@ html.js .qa[open] .ans{height:auto}
 .signature .hero-textlink{color:var(--navy); border-bottom-color:rgba(1,43,129,.32)}
 .signature .hero-textlink:hover{border-bottom-color:var(--navy)}
 
-/* ===== clientes — mural de LOGOS: tile branco, cinza->cor no hover ===== */
+/* ===== clientes — mural de LOGOS em grade de LINHAS (Tufte: a linha fina
+   substitui a caixa; era a tela de maior densidade de bordas do desktop —
+   15 cartões com moldura+sombra viraram fileiras com hairline) ===== */
 .clients .h2{max-width:26ch}
 .client-grid{list-style:none; display:grid; grid-template-columns:repeat(auto-fill,minmax(185px,1fr)); gap:14px; margin-top:40px}
 .client-grid li{display:flex; align-items:center; justify-content:center; text-align:center; min-height:80px; padding:14px 16px;
-  border:1px solid var(--line); border-radius:var(--r-m); box-shadow:var(--e1); background:var(--surface-2); color:var(--navy);
-  font-family:var(--font-display); font-weight:700; font-size:1.18rem; letter-spacing:.01em;
-  transition:border-color .3s,background .3s,color .3s,box-shadow .3s}
-.client-grid.logos{grid-template-columns:repeat(auto-fill,minmax(200px,1fr))}
-.client-grid.logos li{min-height:104px; background:#fff; padding:20px 24px}
+  color:var(--navy);
+  font-family:var(--font-display); font-weight:700; font-size:1.18rem; letter-spacing:.01em}
+.client-grid.logos{grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:0; border-top:1px solid var(--line)}
+.client-grid.logos li{min-height:112px; padding:24px 20px; border-bottom:1px solid var(--line)}
 .client-grid.logos li img{max-width:100%; max-height:54px; width:auto; object-fit:contain; filter:grayscale(1) opacity(.62); transition:filter .35s}
-.client-grid.logos li:hover{border-color:var(--navy)}
 .client-grid.logos li:hover img{filter:none}
 
 /* ficha de caso (Obra em destaque) sobre fundo escuro */
@@ -626,6 +633,7 @@ html.no-js .seg-prog{display:none}
 
 @media(max-width:680px){
   .step{grid-template-columns:64px 1fr; gap:16px} .step .ico{display:none} .step .n{font-size:1.7rem}
+  .steps::before{left:72px}
   .qa .qno{min-width:34px} .qa .ans p{padding-left:4px}
 }
 
@@ -661,8 +669,11 @@ html.no-js .seg-prog{display:none}
   .nav .row > a:first-child{display:flex; align-items:center; min-height:44px}
 
   /* 2 — HERO enxuto: poster de fundo, 1 CTA forte (Hick — o secundário vira
-     link de texto), kicker em 1 linha, trust em linha corrida compacta */
+     link de texto), kicker em 1 linha, trust em linha corrida compacta.
+     A linha-guia vertical do desktop sai aqui (densidade no limite) */
   .hero{min-height:0; padding:112px 0 48px}
+  .hero-text{padding-left:0}
+  .hero-text::before{display:none}
   .hero .kicker{font-size:.72rem; letter-spacing:.1em}
   .hero .lead{margin-top:16px}
   .hero .btn-row{margin-top:24px; flex-direction:column; align-items:stretch; gap:4px}
@@ -686,8 +697,9 @@ html.no-js .seg-prog{display:none}
   .sig-seal .chip{padding:9px 14px; font-size:.7rem}
   .hero-textlink{padding:12px 2px; min-height:44px}
 
-  /* 5 — MÉTODO: passos densos */
+  /* 5 — MÉTODO: passos densos (sem a régua vertical do desktop) */
   .steps{margin-top:20px}
+  .steps::before{display:none}
   .step{grid-template-columns:36px 1fr; gap:12px; padding:13px 0}
   .step .n{font-size:1.3rem}
   .step .b b{font-size:1.1rem; margin-bottom:4px}
@@ -717,10 +729,9 @@ html.no-js .seg-prog{display:none}
   .stat{padding-left:16px}
   .stat .lb{margin-top:6px; font-size:.84rem}
 
-  /* 8 — CLIENTES: 3 colunas, tiles densos (menos borda por pixel — clutter
-     é custo de busca visual, Rosenholtz r=.83) */
-  .client-grid.logos{grid-template-columns:repeat(3,1fr); gap:6px; margin-top:18px}
-  .client-grid.logos li{min-height:46px; padding:6px 8px}
+  /* 8 — CLIENTES: 3 colunas em grade de linhas (mesma lógica do desktop) */
+  .client-grid.logos{grid-template-columns:repeat(3,1fr); gap:0; margin-top:18px}
+  .client-grid.logos li{min-height:52px; padding:10px 8px}
   .client-grid.logos li img{max-height:26px}
   .clients .ft-note{margin-top:12px}
 
