@@ -473,17 +473,21 @@ a.ci-card:hover{border-color:var(--navy); background:#fff; box-shadow:var(--e2)}
 html.cursor-custom .qa summary{cursor:none}
 .qa summary::-webkit-details-marker{display:none}
 .qa .qno{flex:0 0 auto; font-family:var(--font-mono); font-weight:500; font-size:.72rem; letter-spacing:.08em; color:var(--navy); min-width:44px; font-variant-numeric:tabular-nums}
-/* seta discreta que gira 180° ao abrir (substituiu o "+"→"×" em círculo navy) */
+/* seta discreta que gira 180° ao abrir (substituiu o "+"→"×" em círculo navy).
+   Com JS a rotação segue a classe .is-open (gira JÁ no clique de fechar,
+   não só quando o painel termina de recolher). */
 .qa .ic{flex:0 0 auto; margin-left:auto; width:20px; height:20px; color:var(--faint);
   transition:transform .42s var(--ease), color .25s ease}
 .qa summary:hover .ic{color:var(--navy)}
-.qa[open] .ic{transform:rotate(180deg); color:var(--navy)}
+.qa.is-open .ic, html.no-js .qa[open] .ic{transform:rotate(180deg); color:var(--navy)}
 .qa .ans{display:grid; grid-template-rows:0fr; transition:grid-template-rows .45s var(--ease)}
 .qa[open] .ans{grid-template-rows:1fr}
 .qa .ans>div{overflow:hidden}
-.qa .ans p{color:var(--muted); font-size:1.04rem; padding:0 4px 26px 64px; max-width:82ch;
-  opacity:0; transform:translateY(-6px); transition:opacity .3s var(--ease), transform .3s var(--ease)}
-.qa[open] .ans p{opacity:1; transform:none; transition-duration:.42s; transition-delay:.06s}
+/* com JS a altura é animada via WAAPI no main.js — o <details> nativo NÃO anima
+   o fechar (some seco); o grid-rows acima fica como fallback sem JS */
+html.js .qa .ans{display:block; overflow:hidden; height:0; transition:none}
+html.js .qa[open] .ans{height:auto}
+.qa .ans p{color:var(--muted); font-size:1.04rem; padding:0 4px 26px 64px; max-width:82ch}
 
 /* CTA na seção drill-path (zona quente sem conversão) */
 .sig-cta{margin-top:32px}

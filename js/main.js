@@ -364,13 +364,44 @@
     }
   })();
 
-  // ---- FAQ: abrir uma pergunta fecha a anterior (accordion exclusivo) ----
-  (function faqExclusive() {
+  // ---- FAQ: accordion exclusivo COM animação nas duas direções (WAAPI).
+  // O <details> nativo não anima o fechar (o conteúdo some seco) — então o
+  // clique é interceptado e a altura do .ans é animada na mão, com a mesma
+  // curva/tempos da referência (abre ~600ms, fecha ~420ms, texto com fade
+  // atrasado 60ms). Ícone gira pela classe .is-open já no clique. ----
+  (function faqAnimated() {
     var qas = [].slice.call(document.querySelectorAll('.faq details.qa'));
+    if (!qas.length) return;
+    var reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    var EASE = 'cubic-bezier(.16,1,.3,1)';
+    function abre(d) {
+      d.classList.add('is-open'); d.open = true;
+      var ans = d.querySelector('.ans'), p = d.querySelector('.ans p');
+      if (reduce || !ans.animate) return;
+      if (ans._anim) ans._anim.cancel();
+      var h = ans.scrollHeight;
+      ans._anim = ans.animate([{ height: '0px' }, { height: h + 'px' }], { duration: 600, easing: EASE });
+      ans._anim.onfinish = function () { ans._anim = null; };
+      if (p) p.animate(
+        [{ opacity: 0, transform: 'translateY(-6px)' }, { opacity: 1, transform: 'none' }],
+        { duration: 380, delay: 60, easing: EASE, fill: 'backwards' });
+    }
+    function fecha(d) {
+      d.classList.remove('is-open');
+      var ans = d.querySelector('.ans');
+      if (reduce || !ans.animate) { d.open = false; return; }
+      if (ans._anim) ans._anim.cancel();
+      var h = ans.getBoundingClientRect().height;
+      ans._anim = ans.animate([{ height: h + 'px' }, { height: '0px' }], { duration: 420, easing: EASE });
+      ans._anim.onfinish = function () { ans._anim = null; d.open = false; };
+    }
     qas.forEach(function (d) {
-      d.addEventListener('toggle', function () {
-        if (!d.open) return;
-        qas.forEach(function (o) { if (o !== d && o.open) o.open = false; });
+      var s = d.querySelector('summary');
+      s.addEventListener('click', function (ev) {
+        ev.preventDefault();
+        if (d.classList.contains('is-open')) { fecha(d); return; }
+        qas.forEach(function (o) { if (o !== d && o.classList.contains('is-open')) fecha(o); });
+        abre(d);
       });
     });
   })();
