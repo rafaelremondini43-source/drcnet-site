@@ -278,13 +278,28 @@
   // Mobile/saveData/reduced-motion: nunca baixa — fica só o poster.
   (function heroVideo() {
     var v = document.querySelector('.hero-vid'); if (!v) return;
-    var light = saveData || (window.matchMedia && (matchMedia('(prefers-reduced-motion: reduce)').matches || matchMedia('(max-width:768px)').matches));
-    if (light) {
-      var s = v.querySelector('source'); if (s) { s.removeAttribute('src'); v.removeChild(s); }
+    var srcUrl = (function () { var s = v.querySelector('source'); return s ? s.getAttribute('src') : null; })();
+    var started = false;
+    function start() {
+      if (started) return; started = true;
+      // garante o <source> (pode ter sido removido num load estreito)
+      if (!v.querySelector('source') && srcUrl) {
+        var s = document.createElement('source'); s.src = srcUrl; s.type = 'video/mp4'; v.appendChild(s);
+      }
       try { v.load(); } catch (e) {}
+      var p = v.play(); if (p && p.catch) p.catch(function () {});
+    }
+    var narrowMq = matchMedia('(max-width:768px)');
+    var light = saveData || (matchMedia('(prefers-reduced-motion: reduce)').matches || narrowMq.matches);
+    if (light) {
+      var s0 = v.querySelector('source'); if (s0) { s0.removeAttribute('src'); v.removeChild(s0); }
+      try { v.load(); } catch (e) {}
+      // se a janela crescer p/ desktop (não sendo saveData/reduced-motion), o fundo vira vídeo
+      if (!saveData && !matchMedia('(prefers-reduced-motion: reduce)').matches && narrowMq.addEventListener) {
+        narrowMq.addEventListener('change', function (e) { if (!e.matches) start(); }, { once: true });
+      }
       return;
     }
-    function start() { try { v.load(); } catch (e) {} var p = v.play(); if (p && p.catch) p.catch(function () {}); }
     if (document.readyState === 'complete') start();
     else addEventListener('load', start, { once: true });
   })();
